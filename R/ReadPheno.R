@@ -1,7 +1,8 @@
 
 #' @title Read phenotype file
 #' @description Read in the phenotype data. 
-#' @param filename contains the name of the phenotype  file. The file name needs to be in quotes.
+#' @param filename contains the name of the phenotype  file. The file name needs to be in quotes. If the file is not in the working directory, then the full path 
+#' to the file is required.
 #' @param header a logical value. When \code{TRUE}, the first row of the file contains the names of the columns.  Default is \code{TRUE}.
 #' @param csv   a logical value. When \code{TRUE}, a csv file format is assumed. When \code{FALSE}, a space separated format is assumed. Default
 #'              is \code{FALSE}.
@@ -120,11 +121,11 @@ message(" Number of columns:           ", ncol(phenos), "\n\n")
 message(" First 5 rows of the phenotype file are \n")
 if(nrow(phenos) > 5){
   for(ii in 1:5){
-  message(cat(paste(phenos[ii,], sep=" ")))
+  message(paste(phenos[ii,], collapse=" "))
   }
 } else {
   for(ii in 1:nrow(phenos) ){
-  message(cat(paste(phenos[ii,], sep=" ")))
+  message(paste(phenos[ii,], collapse=" "))
   }
 }
 

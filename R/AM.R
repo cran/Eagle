@@ -1,5 +1,6 @@
 
-#' @title multiple-locus association mapping 
+
+#' @title multiple-locus Association Mapping 
 #' @description \code{AM} performs  association mapping within a multiple-locus linear mixed model framework. 
 #' \code{AM}  finds the best set of 
 #' marker loci in strongest association with a trait while simultaneously accounting for any fixed effects and the genetic background.     
@@ -8,18 +9,36 @@
 #'                        If
 #'                        not specified, only an overall mean will be fitted.
 #' @param availmemGb a numeric value. It specifies the amount of available memory (in Gigabytes). 
-#' This should be set to the maximum practical value of available memory for the analysis. 
+#' This should be set to the maximum practical value of available memory for the analysis. If not specified, 8 GBytes is assumed. 
 #' @param geno   the R  object obtained from running \code{\link{ReadMarker}}. This must be specified. 
 #' @param pheno  the R  object  obtained  from running \code{\link{ReadPheno}}. This must be specified.
 #' @param map   the R object obtained from running \code{\link{ReadMap}}. If not specified, a generic map will 
 #'              be assumed. 
+#' @param Zmat     the R object obtained from running \code{\link{ReadZmat}}. If not specified, an identity matrix will be assumed. 
 #' @param ncpu a integer  value for the number of CPU that are available for distributed computing.  The default is to determine the number of CPU automatically. 
 #' @param ngpu   a integer value for the number of gpu available for computation.  The default
 #'               is to assume there are no gpu available.  This option has not yet been implemented.
-#' @param  quiet      a logical value. If set to \code{TRUE}, additional runtime output is printed. 
+#' @param  quiet      a logical value. If set to \code{FALSE}, additional runtime output is printed. 
 #' This is useful for error checking and monitoring the progress of a large analysis. 
 #' @param maxit     an integer value for the maximum number of forward steps to be performed.  This will rarely need adjusting. 
+#' @param fixit     a boolean value. If TRUE, then \code{maxit} iterations are performed, regardless of the value of the model fit value extBIC. If FALSE, 
+#' then the model building process is stopped when extBIC increases in value. 
+#' @param gamma     a value between 0 and 1 for the regularization parameter for the extBIC. Values close to 0 lead to an anti-conservative test. Values close to 1 lead to a 
+#' more conservative test. If this value is left unspecified, a default value of 1 is assumed. See \code{\link{FPR4AM}} for an empirical approach to find the 'best' gamma value. 
 #' @details
+#'
+#' This function is used to perform genome-wide association mapping. The phenotypic and SNP data should already be read in prior to running this function 
+#' (see below for examples).  \code{AM} builds the linear mixed model iteratively, via forward selection. It is through this model building process that we 
+#' identify the SNP-trait associations.  We use the extended BIC (extBIC) to decide on the 'best' model and when to stop looking for a better model. 
+#' The conservativeness of extBIC can be adjusted.  If the \code{gamma} parameter is left at is default setting, then \code{AM} is run in its most 
+#' conservative state (i.e. false positives are minimized but this also decreases the chance of true positives). 
+#'
+#' When interested in running  \code{AM}  at a certain false positive rate, use \code{\link{FPR4AM}}. This function uses permutation to estimate the 
+#' false positive rate (FPR) for \code{AM} for a specific value of \code{gamma}.  Through repeated use of  \code{\link{FPR4AM}} the 'best' value of 
+#' \code{gamma} can be found. Currently, finding the 'best' value of \code{gamma} needs to be done manually. However, it is on our 'to do list' to 
+#' modify this function so that the 'best' \code{gamma} can  be found automatically via a binary search algorithm. 
+#'
+#' Below are some examples of how to use \code{AM} for genome-wide association mapping of data. 
 #'
 #' \subsection{How to perform a basic AM analysis}{
 #'
@@ -28,15 +47,16 @@
 #' \item{}{the snp data are contained in the file geno.txt which is a plain space separated
 #' text file with no column headings. The file is located in the current working directory. 
 #' It contains numeric genotype values 0, 1, and 2 for snp genotypes
-#' AA, AB, and BB, respectively. It also contains the numeric value X for a missing genotype. }
+#' AA, AB, and BB, respectively. It also contains the  value X for a missing genotype. }
 #' \item{}{the phenotype data is contained in the file pheno.txt which is a plain space
 #' separated text file containing a single column with the trait data. The first row of the file 
-#' has the column heading 'y'. 
+#' has the column heading 'y'. This file does not contain any missing data.  
 #' The file is located in the current working directory.}
 #' \item{}{there is no map data.}
 #' }
 #'
-#'  To analyse these data, we would use the following three functions:
+#'  To analyse these data, we would use the following three functions (the parameters can be specified in any order, as well as the 
+#' functions as long as AM is run last):
 #' \preformatted{
 #'   geno_obj <-  ReadMarker(filename='geno.txt', AA=0, AB=1, BB=2, type="text", missing='X')
 #'   
@@ -83,10 +103,51 @@
 #' A table of results is printed to the screen and saved in the R object \code{res}. 
 #'}
 #'
+#' \subsection{How to perform an analysis where individuals have multiple observations}{
+#'
+#' Suppose, 
+#' \itemize{
+#' \item{}{the snp data are contained in the file geno.ped which is a 'PLINK' ped file. See
+#' \code{\link{ReadMarker}} for details. The file is located in /my/dir. Let's assume 
+#' the file is large, say 50 gigabytes,   and our computer only has 32 gigabytes of RAM.}
+#' \item{}{the phenotype data is contained in the file pheno.txt which is a plain space
+#' separated text file with  six columns. The first row of the file contains the column headings. 
+#' The first column is a trait and is labeled y1.
+#' The second column is another trait and is labeled y2. The third and fourth columns 
+#' are nuisance variables and are labeled cov1 and cov2. The fifth and sixth columns
+#' are the first two principal components to account for population substructure and are 
+#' labeled pc1 and pc2. The file contains missing data that are coded as 99. 
+#' The file is located in /my/dir.}
+#' \item{}{the Z matrix data are contained in the file Zmatrix.txt. The file is located in /my/dir.This file is
+#' a design matrix that only contains zeros and ones where each row must contain only a single one in the column that matches 
+#' the individual's trait value to their corresponding genotype.}
+#' \item{}{the map data is contained in the file map.txt, is also located in 
+#'  /my/dir, and the first row has the column headings.}
+#' \item{}{An 'AM' analysis is performed where the trait of interest is y2, 
+#' the fixed effects part of the model is cov1 + cov2 + pc1 + pc2, 
+#' and the available memory is set to 32 gigabytes.}
+#' } 
+#'
+#'  To analyse these data, we would run the following:
+#' \preformatted{
+#'   geno_obj <-  ReadMarker(filename='/my/dir/geno.ped', type='PLINK', availmemGb=32)
+#'   
+#'   pheno_obj <- ReadPheno(filename='/my/dir/pheno.txt', missing=99)
+#'
+#'   map_obj   <- ReadMap(filename='/my/dir/map.txt')
+#'
+#'   Zmat_obj  <- ReadZmat(filename='/my/dir/Zmatrix.txt')
+#'
+#'   res <- AM(trait='y2', fformula=c('cov1 + cov2 + pc1 + pc2'), 
+#'             geno=geno_obj, pheno=pheno_obj, map=map_obj, Zmat=Zmat_obj, availmemGb=32)
+#' }
+#' A table of results is printed to the screen and saved in the R object \code{res}. 
+#'}
+#'
 #' \subsection{Dealing with missing marker data}{
 #'
 #' \code{AM} can tolerate some missing marker data. However, ideally, 
-#' a specialized genotype imputation program such as  'BEAGLE', 'MACH', 'fastPHASE', or 'PHASE2', should be 
+#' a specialized genotype imputation program such as  'BEAGLE'  or 'PHASE2', should be 
 #' used to impute the missing marker data before being read into 'Eagle'.  
 #'
 #' }
@@ -105,7 +166,7 @@
 #'
 #' \subsection{Error Checking}{
 #'
-#' Most errors occur when reading in the data. However, as an extra precaution, if \code{quiet=TRUE}, then additional 
+#' Most errors occur when reading in the data. However, as an extra precaution, if \code{quiet=FALSE}, then additional 
 #' output is printed during the running of \code{AM}. If \code{AM} is failing, then this output can be useful for diagnosing 
 #' the problem. 
 #'}
@@ -113,13 +174,13 @@
 #'
 #'
 #'
-#' @seealso \code{\link{ReadMarker}}, \code{\link{ReadPheno}}, and \code{\link{ReadMap}}
+#' @seealso \code{\link{ReadMarker}}, \code{\link{ReadPheno}},  \code{\link{ReadZmat}}, and \code{\link{ReadMap}}
 #'
 #' @return
 #' A list with the following components:
 #' \describe{
 #'\item{trait}{column name of the trait being used by 'AM'.}
-#'\item{fformula}{Right hand size formula of the fixed effects part of the linear mixed model.}
+#'\item{fformula}{the fixed effects part of the linear mixed model.}
 #'\item{indxNA}{a vector containing the row indexes of those individuals, whose trait and fixed effects data contain
 #' missing values and have been removed from the analysis.}
 #' \item{Mrk}{a vector with the names of the snp in strongest and significant association with the trait.If no loci are found to be 
@@ -171,7 +232,8 @@
 #'            
 #'
 #'  # Performing multiple-locus genome-wide association mapping with a model 
-#'  #    with no fixed effects except for an intercept. 
+#'  #    with fixed effects cov1 and cov2 and an intercept. The intercept 
+#'  #    need not be specified as it is assumed. 
 #'  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #'  
 #'   res <- AM(trait = 'y',
@@ -187,10 +249,13 @@ AM <- function(trait=NULL,
                geno=NULL, 
                pheno=NULL, 
                map = NULL,
+               Zmat = NULL,
                ncpu=detectCores(),
                ngpu=0,
                quiet=TRUE,
-               maxit=20
+               maxit=20,
+               fixit=FALSE,
+               gamma=NULL 
                ){
 
  ## Core function for performing whole genome association mapping with EMMA
@@ -209,16 +274,14 @@ AM <- function(trait=NULL,
  ## print tile
  .print_title()
 
- ngpu <- 0  ### NEED TO CHANGE THIS WHEN gpu implemented. 
 
 
  error.code <- check.inputs.mlam(ncpu=ncpu , availmemGb=availmemGb, colname.trait=trait, 
-                     map=map, pheno=pheno, geno=geno )
+                     map=map, pheno=pheno, geno=geno, Zmat=Zmat )
  if(error.code){
    message("\n The Eagle function AM has terminated with errors.\n")
    return(NULL)
  }
-
 
 
  ## checking if map is present. If not, generate a fake map. 
@@ -232,27 +295,6 @@ AM <- function(trait=NULL,
                      Chr=rep(1, geno[["dim_of_ascii_M"]][2]), 
                      Pos=1:geno[["dim_of_ascii_M"]][2])
   }
-
- ## check that the number of rows in the map file match the number of columns in the geno file
- if (geno[["dim_of_ascii_M"]][2] != nrow(map)){
-   message(" Error: There is a differing number of loci read in by ReadMarker and ReadMap functions. \n")
-   message("         The number of marker loci read in by ReadMarker() is ", geno[["dim_of_ascii_M"]][2], "\n")
-   message("        The number of marker loci in  the marker map is  ", nrow(map), "\n") 
-   message("\n AM has terminated with errors.\n")
-   return(NULL)
- }
-
-
- ## check that the number of rows in the phenotype file match the number of rows in the geno file
- if (geno[["dim_of_ascii_M"]][1] != nrow(pheno)){
-   message(" Error: There is a differing number  of rows read in by ReadMarker and ReadPheno functions. \n")
-   message("         The number of rows read in by ReadMarker() is ", geno[["dim_of_ascii_M"]][1], "\n")
-   message("        The number of rows  read in by ReadPheno is  ", nrow(map), "\n") 
-   message("\n AM has terminated with errors.\n")
-   return(NULL)
- }
-
-
 
 
  selected_loci <- NA
@@ -274,15 +316,14 @@ if(!is.null(fformula)){
       if(length(fformula)==1){
           fformula <- as.formula(paste("~", fformula, sep="") )
       }  else {
-          message(" fformula has ", length(fformula), " separate terms. It should be a single formula. \n") 
+          message(" fformula has ", length(fformula), " separate terms. It should be of the form  x1 + x2 + x3  \n") 
           message("\n AM has terminated with errors.\n")
           return(NULL)
       }
    } else {
     ## problem: formula should not contain ~
-    message(" It looks like fformula contains a formula. \n")
-    message(" If so, only the terms on the right hand side of the formula should be specified. \n")
-    message(" Please remove the ~ from the formula. \n")
+    message(" Only the terms on the right-hand side of the formula should be specified. \n")
+    message(" Please remove the ~ from the formula. The formula should be of the form x1 + x2 + x3 \n")
     message("\n AM has terminated with errors.\n")
     return(NULL)
   }  ## if length grep
@@ -330,7 +371,8 @@ if(!is.null(fformula)){
 
 
 
- ## remove missing observations from trait
+ ## remove missing observations from trait and 
+ ## Z matrix if not null
  if(length(indxNA)>0){
     trait <- trait[-indxNA]
 
@@ -339,6 +381,9 @@ if(!is.null(fformula)){
      message(cat("             ", indxNA, "\n\n"))
     }
 
+    if(!is.null(Zmat)){
+      Zmat <- Zmat[-indxNA,]
+    }
  }
 
 
@@ -387,73 +432,86 @@ if(length(indxNA)>0){
 
 
  ## Initialization
+
  continue <- TRUE
  itnum <- 1
 
-
  while(continue){
-  message("\n\n Iteration" , itnum, ": Searching for most significant marker-trait association\n\n")
-   ## based on selected_locus, form model matrix X
-  currentX <- constructX(fnameM=geno[["asciifileM"]], currentX=currentX, loci_indx=new_selected_locus,
+     message("\n\n Iteration " , itnum, ": Searching for most significant marker-trait association\n\n")
+     currentX <- constructX(Zmat=Zmat, fnameM=geno[["asciifileM"]], currentX=currentX, loci_indx=new_selected_locus,
                           dim_of_ascii_M=geno[["dim_of_ascii_M"]],
                           map=map, availmemGb = availmemGb)  
 
-
-
-    ## calculate Ve and Vg
-    Args <- list(geno=geno,availmemGb=availmemGb,
+     ## calculate Ve and Vg
+     Args <- list(geno=geno,availmemGb=availmemGb,
                     ncpu=ncpu,selected_loci=selected_loci,
                     quiet=quiet)
 
-    if(itnum==1){
+     if(itnum==1){
         if(!quiet)
            message(" quiet=FALSE: calculating M %*% M^t. \n")
-         MMt <- do.call(.calcMMt, Args)  
+        MMt <- do.call(.calcMMt, Args)  
+
 
 
          if(!quiet)
              doquiet(dat=MMt, num_markers=5 , lab="M%*%M^t")
         invMMt <- chol2inv(chol(MMt))   ## doesn't use GPU
         gc()
-    } 
-    if(!quiet){
-      message(" Calculating variance components for multiple-locus model. \n")
-    }
-    vc <- .calcVC(trait=trait, currentX=currentX,MMt=MMt, ngpu=ngpu) 
-    gc()
-    best_ve <- vc[["ve"]]
-    best_vg <- vc[["vg"]]
-
-
-
-    ## Calculate extBIC
-    new_extBIC <- .calc_extBIC(trait, currentX,MMt, geno, quiet) 
-    gc()
-
-    ## set vector extBIC
-    extBIC <- c(extBIC, new_extBIC)
-
-
-    ## Print findings to screen
-   .print_results(itnum, selected_loci, map,  extBIC)
+     }  
    
-
-   ## Select new locus if extBIC is still decreasing 
-   if(which(extBIC==min(extBIC))==length(extBIC) ){  ## new way of stoppint based on extBIC only
-     ## find QTL
-     ARgs <- list(geno=geno,availmemGb=availmemGb, selected_loci=selected_loci,
-                 MMt=MMt, invMMt=invMMt, best_ve=best_ve, best_vg=best_vg, currentX=currentX,
-                 ncpu=ncpu, quiet=quiet, trait=trait, ngpu=ngpu)
-      new_selected_locus <- do.call(.find_qtl, ARgs)  ## memory blowing up here !!!! 
+ 
+     if(!quiet){
+        message(" Calculating variance components for multiple-locus model. \n")
+     }
+     vc <- .calcVC(trait=trait, Zmat=Zmat, currentX=currentX,MMt=MMt, ngpu=ngpu) 
      gc()
-     selected_loci <- c(selected_loci, new_selected_locus)
+     best_ve <- vc[["ve"]]
+     best_vg <- vc[["vg"]]
 
-   }  else {
-     ## terminate while loop, 
-     continue <- FALSE
-   }  ## end if else
+     ## Calculate extBIC
+     new_extBIC <- .calc_extBIC(trait, currentX,MMt, geno, Zmat, 
+                       numberSNPselected=(itnum-1), quiet, gamma) 
+     gc()
 
+     ## set vector extBIC
+     extBIC <- c(extBIC, new_extBIC)
 
+     ## Print findings to screen
+    .print_results(itnum, selected_loci, map,  extBIC)
+  
+
+    ## select new locus if fixit 
+    if (fixit){
+       if (itnum <= maxit){
+           ## find QTL
+           ARgs <- list(Zmat=Zmat, geno=geno,availmemGb=availmemGb, selected_loci=selected_loci,
+                 MMt=MMt, invMMt=invMMt, best_ve=best_ve, best_vg=best_vg, currentX=currentX,
+                 ncpu=ncpu, quiet=quiet, trait=trait, ngpu=ngpu )
+          new_selected_locus <- do.call(.find_qtl, ARgs)  ## memory blowing up here !!!! 
+          gc()
+          selected_loci <- c(selected_loci, new_selected_locus)
+       } else {
+         continue <- FALSE
+       }
+    } else {
+
+        ## Select new locus if extBIC is still decreasing 
+        if(which(extBIC==min(extBIC))==length(extBIC) ){  ## new way of stoppint based on extBIC only
+           ## find QTL
+           ARgs <- list(Zmat=Zmat, geno=geno,availmemGb=availmemGb, selected_loci=selected_loci,
+                     MMt=MMt, invMMt=invMMt, best_ve=best_ve, best_vg=best_vg, currentX=currentX,
+                     ncpu=ncpu, quiet=quiet, trait=trait, ngpu=ngpu  )
+          new_selected_locus <- do.call(.find_qtl, ARgs)  ## memory blowing up here !!!! 
+          gc()
+          selected_loci <- c(selected_loci, new_selected_locus)
+
+       }  else {
+            ## terminate while loop, 
+            continue <- FALSE
+       }  ## end if else
+
+   } ## end if fixit
    itnum <- itnum + 1
    ## alternate stopping rule - if maxit has been exceeded.
     if(itnum > maxit){
@@ -496,9 +554,6 @@ if( itnum > maxit){
 return( sigres )
 
 } ## end AM
-
-
-
 
 
 

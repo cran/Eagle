@@ -1,27 +1,3 @@
-
-GenomicRel = function(M){
-#       markers must be 0, 1, 2 for homozygous, heterozygous and other homozygous
-
-    M= M+1  ## since M is -1,0,1
-    p1=round((apply(M,2,sum)+nrow(M))/(nrow(M)*2),3)
-    p=2*(p1-.5)
-    P = matrix(p,byrow=T,nrow=nrow(M),ncol=ncol(M))
-    Z = as.matrix(M-P)
-
-    b=1-p1
-    c=p1*b
-    d=2*(sum(c))
-
-    ZZt = Z %*% t(Z)
-    G = (ZZt/d)
-    #invG=solve(G)
-
-    return(G)
-}
-
-
-
-
 #' @title Summary of multiple locus association mapping results
 #' @description    A summary function that provides additional information on the significant 
 #'     marker-trait associations found by \code{\link{AM}}
@@ -37,8 +13,8 @@ GenomicRel = function(M){
 #' the additive effect size and p-value for each 
 #' fixed effect in the final model.  Second, a table of results is produced with the 
 #' proportion of phenotypes variance explained by  the different multiple-locus models. Each row 
-#' in this table is the proportion of phenotype variance after the marker locus has been added to the 
-#' multiple locus model. Our calculations of variance explained are based on Sun et al. (2010).  
+#' in this table is the proportion of phenotypic variance explained (Sun et al. 2010) after the marker locus has been added to the 
+#' multiple locus model. 
 #' @references  Sun G., Zhu C., Kramer  MH., Yang S-S., et al. 2010. Variation explained in mixed model association 
 #' mapping. Heredity 105, 330-340. 
 #' @examples
