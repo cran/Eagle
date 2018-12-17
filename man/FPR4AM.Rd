@@ -2,16 +2,17 @@
 % Please edit documentation in R/FPR4AM.R
 \name{FPR4AM}
 \alias{FPR4AM}
-\title{Calculate false positive rate (FPR) for AM}
+\title{Set the false positive rate for \code{AM}}
 \usage{
-FPR4AM(trait = trait, gamma = NULL, numreps = 100, fformula = NULL,
-  availmemGb = 8, geno = NULL, pheno = NULL, map = NULL, Zmat = NULL,
-  ncpu = detectCores(), ngpu = 0, seed = 101)
+FPR4AM(falseposrate = 0.05, trait = trait, numreps = 100,
+  fformula = NULL, availmemGb = 8, numgammas = 20, geno = NULL,
+  pheno = NULL, map = NULL, Zmat = NULL, ncpu = detectCores(),
+  ngpu = 0, seed = 101)
 }
 \arguments{
-\item{trait}{the name of the column in the phenotype data file that contains the trait data. The name is case sensitive and must match exactly the column name in the phenotype data file.  This parameter must be specified.}
+\item{falseposrate}{the desired false positive rate.}
 
-\item{gamma}{a value between 0 and 1. Values closer to 1 decrease false positive rate.  This parameter must be specified.}
+\item{trait}{the name of the column in the phenotype data file that contains the trait data. The name is case sensitive and must match exactly the column name in the phenotype data file.  This parameter must be specified.}
 
 \item{numreps}{the number of replicates upon which to base the calculation of the false 
 positive rate. We have found 100 replicates to be sufficient.}
@@ -20,6 +21,9 @@ positive rate. We have found 100 replicates to be sufficient.}
 
 \item{availmemGb}{a numeric value. It specifies the amount of available memory (in Gigabytes). 
 This should be set to the maximum practical value of available memory for the analysis.}
+
+\item{numgammas}{the number of equidistant gamma values from 0 to 1 for which to calculate the false positive rate of the model building process. This should not need 
+adjusting.}
 
 \item{geno}{the R  object obtained from running \code{\link{ReadMarker}}. This must be specified.}
 
@@ -38,26 +42,29 @@ This option has not yet been implemented.}
 
 \item{seed}{a integer value for the starting seed for the permutations.}
 }
+\value{
+A list with the following components:
+\describe{
+\item{numreps:}{the number of permutations performed.}
+\item{gamma:}{the vector of gamma values.}
+\item{falsepos:}{the false positive rates for the gamma values.}
+\item{setgamma:}{the gamma value that gives a false positive rate of \code{falseposrate} }
+}
+}
 \description{
-A permutation approach for calculating the false positive rate for \code{\link{AM}} for a given \code{gamma} value.
+The gamma parameter in \code{AM} controls the false positive rate of the model 
+building process. This function uses permutation to  find the gamma value for a desired false positive rate.
 }
 \details{
-This function is useful for  calculating  the false positive rate  of \code{\link{AM}} for a given value of \code{gamma}. We do this empirically, via permutation. 
-This function is also of use when interested in finding the  value of \code{gamma}  corresponding to a certain false positive rate. Ideally, this would be done automatically 
-but currently, it is up to the user to implement their own optimisation strategy. It is on our 'to do list' to revise this function so that 
- a binary search is performed to find the 'best' \code{gamma} value. 
+The false positive rate for \code{\link{AM}} is controlled by its gamma parameter. Values close to 
+1 (0) decreases (increases) the false positive rate of detecting SNP-trait associations. There is no 
+analytical way of setting gamma for a specified false positive rate. So we are using permutation to do this empirically. 
 
+By setting \code{falseposrate} to the desired false positive rate, this function will find the corresponding gamma value for \code{\link{AM}}. 
 
+A table of other gamma values for a range of false positive rates is also given. 
 
-Permutation is performed as follows. First, the null model is fitted to the trait data. 
-This is the model that contains all the fixed effects and an error. 
-Second,  residuals are  obtained 
-from the fitted null model. Third, the residuals are permuted \code{numreps} times. Fourth, for each permutation, 
-we treat the residuals as the trait and perform multiple-locus association mapping, conditional on the \code{gamma}
-value that has been specified. Any findings are false positives. Fifth, once the \code{numreps} analyses of the permuted 
-residuals have been performed, we sum the total number of false positives across the replicate analyses, and 
-divide by \code{numreps}.  We now have an estimate of the false positive rate (for the specified trait, 
-fixed effects model \code{fformula} and \code{gamma} value).
+To increase the precision of the gamma estimates, increase \code{numreps}.
 }
 \examples{
   \dontrun{ 
@@ -96,16 +103,24 @@ fixed effects model \code{fformula} and \code{gamma} value).
   pheno_obj <- ReadPheno(filename=complete.name)
            
 
- # Find the false positive rate for AM when gamma is set to the
- # value 0.9
+ #  Suppose we want to perform the AM analysis at a 5\% false positive rate. 
  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  
-  falseposrate <- FPR4AM(trait = 'y',
-                gamma= 0.9,
+  ans <- FPR4AM(falseposrate = 0.05,
+                trait = 'y',
                 fformula=c('cov1+cov2'),
                 map = map_obj,
                 pheno = pheno_obj,
                 geno = geno_obj) 
+ 
+
+  res <- AM(trait =  'y',
+                fformula=c('cov1+cov2'),
+                map = map_obj,
+                pheno = pheno_obj,
+                geno = geno_obj,
+                gamma = ans$setgamma)
+
 
 }
 

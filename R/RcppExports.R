@@ -13,6 +13,10 @@ calculateMMt_rcpp <- function(f_name_ascii, max_memory_in_Gbytes, num_cores, sel
     .Call('_Eagle_calculateMMt_rcpp', f_name_ascii, max_memory_in_Gbytes, num_cores, selected_loci, dims, quiet, message)
 }
 
+calculate_a_and_vara_batch_rcpp <- function(numreps, f_name_ascii, selected_loci, inv_MMt_sqrt, dim_reduced_vara, max_memory_in_Gbytes, dims, a, quiet, message) {
+    .Call('_Eagle_calculate_a_and_vara_batch_rcpp', numreps, f_name_ascii, selected_loci, inv_MMt_sqrt, dim_reduced_vara, max_memory_in_Gbytes, dims, a, quiet, message)
+}
+
 calculate_a_and_vara_rcpp <- function(f_name_ascii, selected_loci, inv_MMt_sqrt, dim_reduced_vara, max_memory_in_Gbytes, dims, a, quiet, message) {
     .Call('_Eagle_calculate_a_and_vara_rcpp', f_name_ascii, selected_loci, inv_MMt_sqrt, dim_reduced_vara, max_memory_in_Gbytes, dims, a, quiet, message)
 }

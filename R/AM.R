@@ -1,5 +1,3 @@
-
-
 #' @title multiple-locus Association Mapping 
 #' @description \code{AM} performs  association mapping within a multiple-locus linear mixed model framework. 
 #' \code{AM}  finds the best set of 
@@ -23,8 +21,10 @@
 #' @param maxit     an integer value for the maximum number of forward steps to be performed.  This will rarely need adjusting. 
 #' @param fixit     a boolean value. If TRUE, then \code{maxit} iterations are performed, regardless of the value of the model fit value extBIC. If FALSE, 
 #' then the model building process is stopped when extBIC increases in value. 
-#' @param gamma     a value between 0 and 1 for the regularization parameter for the extBIC. Values close to 0 lead to an anti-conservative test. Values close to 1 lead to a 
-#' more conservative test. If this value is left unspecified, a default value of 1 is assumed. See \code{\link{FPR4AM}} for an empirical approach to find the 'best' gamma value. 
+#' @param gamma     a value between 0 and 1 for the regularization parameter for the extBIC. Values close to 0 lead to an anti-conservative test. Values close to 1 lead to a  
+#' more conservative test. If this value is left unspecified, a default value of 1 is assumed. See \code{\link{FPR4AM}} for an empirical approach for setting the  gamma value. 
+#'
+
 #' @details
 #'
 #' This function is used to perform genome-wide association mapping. The phenotypic and SNP data should already be read in prior to running this function 
@@ -33,10 +33,8 @@
 #' The conservativeness of extBIC can be adjusted.  If the \code{gamma} parameter is left at is default setting, then \code{AM} is run in its most 
 #' conservative state (i.e. false positives are minimized but this also decreases the chance of true positives). 
 #'
-#' When interested in running  \code{AM}  at a certain false positive rate, use \code{\link{FPR4AM}}. This function uses permutation to estimate the 
-#' false positive rate (FPR) for \code{AM} for a specific value of \code{gamma}.  Through repeated use of  \code{\link{FPR4AM}} the 'best' value of 
-#' \code{gamma} can be found. Currently, finding the 'best' value of \code{gamma} needs to be done manually. However, it is on our 'to do list' to 
-#' modify this function so that the 'best' \code{gamma} can  be found automatically via a binary search algorithm. 
+#' When interested in running  \code{AM}  at a certain false positive rate, use \code{\link{FPR4AM}}. This function uses permutation to 
+#' find the gamma value for a desired false positive rate for \code{AM}. 
 #'
 #' Below are some examples of how to use \code{AM} for genome-wide association mapping of data. 
 #'
@@ -62,12 +60,13 @@
 #'   
 #'   pheno_obj <- ReadPheno(filename='pheno.txt')
 #'
+#'  # since gamma is not specified, this will run AM conservatively (where the false positive rate is lowest).
 #'   res <- AM(trait='y', geno=geno_obj, pheno=pheno_obj)
 #' }
 #' A table of results is printed to the screen and saved in the R object \code{res}. 
 #'}
 #'
-#' \subsection{How to perform a more complicated AM analysis}{
+#' \subsection{How to perform a more complicated AM analysis where the false positive rate is 5\%}{
 #'
 #' Suppose, 
 #' \itemize{
@@ -97,8 +96,13 @@
 #'
 #'   map_obj   <- ReadMap(filename='/my/dir/map.txt')
 #'
-#'   res <- AM(trait='y2', fformula=c('cov1 + cov2 + pc1 + pc2'), 
+#'   # FPR4AM calculates the gamma value corresponding to a desired false positive rate of 5\%
+#'   ans <- FPR4AM(falseposrate=0.05, numreps=100, trait='y2', fformula=c('cov1 + cov2 + pc1 + pc2'), 
 #'             geno=geno_obj, pheno=pheno_obj, map=map_obj, availmemGb=32)
+#'
+#'   # performs association mapping with a 5\% false positive rate
+#'   res <- AM(trait='y2', fformula=c('cov1 + cov2 + pc1 + pc2'), 
+#'             geno=geno_obj, pheno=pheno_obj, map=map_obj, availmemGb=32, gamma=ans$setgamma)
 #' }
 #' A table of results is printed to the screen and saved in the R object \code{res}. 
 #'}
@@ -174,24 +178,25 @@
 #'
 #'
 #'
-#' @seealso \code{\link{ReadMarker}}, \code{\link{ReadPheno}},  \code{\link{ReadZmat}}, and \code{\link{ReadMap}}
+#' @seealso \code{\link{FPR4AM}} , \code{\link{ReadMarker}}, \code{\link{ReadPheno}},  \code{\link{ReadZmat}}, and \code{\link{ReadMap}}
 #'
 #' @return
 #' A list with the following components:
 #' \describe{
-#'\item{trait}{column name of the trait being used by 'AM'.}
-#'\item{fformula}{the fixed effects part of the linear mixed model.}
-#'\item{indxNA}{a vector containing the row indexes of those individuals, whose trait and fixed effects data contain
+#'\item{trait:}{column name of the trait being used by 'AM'.}
+#'\item{fformula:}{the fixed effects part of the linear mixed model.}
+#'\item{indxNA:}{a vector containing the row indexes of those individuals, whose trait and fixed effects data contain
 #' missing values and have been removed from the analysis.}
-#' \item{Mrk}{a vector with the names of the snp in strongest and significant association with the trait.If no loci are found to be 
+#' \item{Mrk:}{a vector with the names of the snp in strongest and significant association with the trait.If no loci are found to be 
 #' significant, then this component is \code{NA}.}
-#' \item{Chr}{the chromosomes on which the identified snp lie.}
-#' \item{Pos}{the map positions for the identified snp.}
-#' \item{Indx}{the column indexes in the marker file of the identified snp.} 
-#' \item{ncpu}{number of cpu used for the calculations.}
-#' \item{availmemGb}{amount of RAM in gigabytes that has been set by the user.}
-#' \item{quiet}{ boolean value of the parameter.}
-#' \item{extBIC}{numeric vector with the extended BIC values for the loci  found to be in  significant association with the trait.}
+#' \item{Chr:}{the chromosomes on which the identified snp lie.}
+#' \item{Pos:}{the map positions for the identified snp.}
+#' \item{Indx:}{the column indexes in the marker file of the identified snp.} 
+#' \item{ncpu:}{number of cpu used for the calculations.}
+#' \item{availmemGb:}{amount of RAM in gigabytes that has been set by the user.}
+#' \item{quiet:}{ boolean value of the parameter.}
+#' \item{extBIC:}{numeric vector with the extended BIC values for the loci  found to be in  significant association with the trait.}
+#' \item{gamma}{the numeric value of the parameter.}
 #'}
 #'
 #' @examples
@@ -277,7 +282,7 @@ AM <- function(trait=NULL,
 
 
  error.code <- check.inputs.mlam(ncpu=ncpu , availmemGb=availmemGb, colname.trait=trait, 
-                     map=map, pheno=pheno, geno=geno, Zmat=Zmat )
+                     map=map, pheno=pheno, geno=geno, Zmat=Zmat, gamma=gamma )
  if(error.code){
    message("\n The Eagle function AM has terminated with errors.\n")
    return(NULL)
@@ -367,30 +372,39 @@ if(!is.null(fformula)){
  }
 
  ## check for NA's in trait
- indxNA <- check.for.NA.in.trait(trait=trait)
+ indxNA_pheno <- check.for.NA.in.trait(trait=trait)
+ indxNA_geno <- indxNA_pheno  
 
 
-
- ## remove missing observations from trait and 
- ## Z matrix if not null
- if(length(indxNA)>0){
-    trait <- trait[-indxNA]
+ ## remove missing observations from trait  
+ if(length(indxNA_pheno)>0){
+    trait <- trait[-indxNA_pheno]
 
     if(!quiet ){
      message(" The following rows are being removed from pheno due to missing data: \n")
-     message(cat("             ", indxNA, "\n\n"))
+     message(cat("             ", indxNA_pheno, "\n\n"))
     }
 
-    if(!is.null(Zmat)){
-      Zmat <- Zmat[-indxNA,]
-    }
- }
+}
+
+
+## If Z matrix is present, then we may not need to remove genotypes (i.e. indxNA_geno)
+if(!is.null(Zmat)){
+      Zmat <- Zmat[-indxNA_pheno,]
+      # check for columns with 0 sums. 
+      s <- colSums(Zmat)
+      indxNA_geno <- which(s==0) 
+      if (length(indxNA_geno) > 0)
+          Zmat <- Zmat[, -indxNA_geno ]
+}
+
+
 
 
 ## create a new M.ascii and Mt.ascii if length(indxNA) is non-zero 
 ## remove rows in M.ascii and columns in Mt.ascii of those individuals listed in indxNA 
-if(length(indxNA)>0){
-    res <- ReshapeM(fnameM=geno$asciifileM, fnameMt=geno$asciifileMt, indxNA=indxNA, dims=geno$dim_of_ascii_M)
+if(length(indxNA_geno)>0){
+    res <- ReshapeM(fnameM=geno$asciifileM, fnameMt=geno$asciifileMt, indxNA=indxNA_geno, dims=geno$dim_of_ascii_M)
     message(cat("new dimensions of reshaped M", res, "\n"))
 
      if(.Platform$OS.type == "unix") {
@@ -411,7 +425,7 @@ if(length(indxNA)>0){
 
 
  ## build design matrix currentX
- currentX <- .build_design_matrix(pheno=pheno, indxNA=indxNA, fformula=fformula, quiet=quiet )
+ currentX <- .build_design_matrix(pheno=pheno, indxNA=indxNA_pheno, fformula=fformula, quiet=quiet )
 
  ## check currentX for solve(crossprod(X, X)) singularity
  chck <- tryCatch({ans <- solve(crossprod(currentX, currentX))},
@@ -487,7 +501,7 @@ if(length(indxNA)>0){
            ## find QTL
            ARgs <- list(Zmat=Zmat, geno=geno,availmemGb=availmemGb, selected_loci=selected_loci,
                  MMt=MMt, invMMt=invMMt, best_ve=best_ve, best_vg=best_vg, currentX=currentX,
-                 ncpu=ncpu, quiet=quiet, trait=trait, ngpu=ngpu )
+                 ncpu=ncpu, quiet=quiet, trait=trait, ngpu=ngpu, itnum=itnum )
           new_selected_locus <- do.call(.find_qtl, ARgs)  ## memory blowing up here !!!! 
           gc()
           selected_loci <- c(selected_loci, new_selected_locus)
@@ -501,7 +515,7 @@ if(length(indxNA)>0){
            ## find QTL
            ARgs <- list(Zmat=Zmat, geno=geno,availmemGb=availmemGb, selected_loci=selected_loci,
                      MMt=MMt, invMMt=invMMt, best_ve=best_ve, best_vg=best_vg, currentX=currentX,
-                     ncpu=ncpu, quiet=quiet, trait=trait, ngpu=ngpu  )
+                     ncpu=ncpu, quiet=quiet, trait=trait, ngpu=ngpu, itnum=itnum  )
           new_selected_locus <- do.call(.find_qtl, ARgs)  ## memory blowing up here !!!! 
           gc()
           selected_loci <- c(selected_loci, new_selected_locus)
@@ -519,18 +533,18 @@ if(length(indxNA)>0){
          .print_header()
          ## need to remove the last selected locus since we don't go on and calculate its H and extBIC 
          ## under this new model. 
-         .print_final(selected_loci[-length(selected_loci)], map, extBIC)
+         .print_final(selected_loci[-length(selected_loci)], map, extBIC, gamma)
          sigres <- .form_results(trait, selected_loci[-length(selected_loci)], map,  fformula, 
-                     indxNA, ncpu, availmemGb, quiet,  extBIC )   
+                     indxNA_pheno, ncpu, availmemGb, quiet,  extBIC, gamma )   
     }
  
   }  ## end while continue
 
 if( itnum > maxit){
     .print_header()
-    .print_final(selected_loci, map,  extBIC)
+    .print_final(selected_loci, map,  extBIC, gamma)
     sigres <- .form_results(trait, selected_loci, map,  fformula, 
-                     indxNA, ncpu, availmemGb, quiet,  extBIC )   
+                     indxNA_pheno, ncpu, availmemGb, quiet,  extBIC, gamma )   
 
 } else {
     ## remove last selected_loci as for this locus, the extBIC went up
@@ -538,15 +552,15 @@ if( itnum > maxit){
         .print_header()
         .print_final(selected_loci[-length(selected_loci)], 
                      map, 
-                     extBIC[-length(selected_loci)])
+                     extBIC[-length(selected_loci)], gamma )
         sigres <- .form_results(trait, selected_loci[-length(selected_loci)], map,  fformula, 
-                         indxNA, ncpu, availmemGb, quiet, 
-                         extBIC[-length(selected_loci)] )   
+                         indxNA_pheno, ncpu, availmemGb, quiet, 
+                         extBIC[-length(selected_loci)], gamma )   
     } else {
         .print_header()
-        .print_final(selected_loci, map, extBIC)
+        .print_final(selected_loci, map, extBIC, gamma )
         sigres <- .form_results(trait, selected_loci, map,  fformula, 
-                         indxNA, ncpu, availmemGb, quiet, extBIC )   
+                         indxNA_pheno, ncpu, availmemGb, quiet, extBIC, gamma )   
    }  ## end inner  if(length(selected_locus)>1)
 }  ## end if( itnum > maxit)
 

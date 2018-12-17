@@ -1,13 +1,13 @@
-calculate_reduced_a <- function(Zmat=NULL, varG=NULL, P=NULL, MMtsqrt=NULL, y=NULL, quiet=TRUE, message=message)
+calculate_reduced_a_batch <- function(Zmat=NULL, varG=NULL, P=NULL, MMtsqrt=NULL, y=NULL, quiet=TRUE, message=message)
 {
 
   ## internal function to AM
-  if( !(nrow(P) ==  length(y))){
+  if( !(nrow(P) ==  nrow(y))){
     message(" Error:  there is a problem with the  dimensions of  P, and/or the vector y.")
     message("         They should  be of the dimension (n x n), and a vector of length n.")
     message(" The dimensions are: \n")
     message(" dim(P)      = ", dim(P), "\n")
-    message(" length(y)   = ", length(y), "\n")
+    message(" length(y)   = ", nrow(y), "\n")
     return(NULL)
 
   }

@@ -1,7 +1,7 @@
-#' @title Calculate false positive rate (FPR) for AM
-#' @description A permutation approach for calculating the false positive rate for \code{\link{AM}} for a given \code{gamma} value. 
-#' 
-#' @param gamma     a value between 0 and 1. Values closer to 1 decrease false positive rate.  This parameter must be specified.  
+#' @title Set the false positive rate for \code{AM}
+#' @description The gamma parameter in \code{AM} controls the false positive rate of the model 
+#' building process. This function uses permutation to  find the gamma value for a desired false positive rate. 
+#' @param  falseposrate the desired false positive rate.
 #' @param  numreps  the number of replicates upon which to base the calculation of the false 
 #'                   positive rate. We have found 100 replicates to be sufficient.  
 #' @param trait  the name of the column in the phenotype data file that contains the trait data. The name is case sensitive and must match exactly the column name in the phenotype data file.  This parameter must be specified. 
@@ -13,6 +13,8 @@
 #' @param map   the R object obtained from running \code{\link{ReadMap}}. If not specified, a generic map will 
 #'              be assumed. 
 #' @param Zmat     the R object obtained from running \code{\link{ReadZmat}}. If not specified, an identity matrix will be assumed. 
+#' @param numgammas the number of equidistant gamma values from 0 to 1 for which to calculate the false positive rate of the model building process. This should not need 
+#' adjusting.  
 #' @param ncpu a integer  value for the number of CPU that are available for distributed computing.  The default is to determine the number of CPU automatically. 
 #' @param ngpu   a integer value for the number of gpu available for computation.  The default
 #'               is to assume there are no gpu available.  
@@ -20,33 +22,29 @@
 #' @param seed  a integer value for the starting seed for the permutations. 
 #' 
 #' @details
+
+#' The false positive rate for \code{\link{AM}} is controlled by its gamma parameter. Values close to 
+#' 1 (0) decreases (increases) the false positive rate of detecting SNP-trait associations. There is no 
+#' analytical way of setting gamma for a specified false positive rate. So we are using permutation to do this empirically. 
+#' 
+#' By setting \code{falseposrate} to the desired false positive rate, this function will find the corresponding gamma value for \code{\link{AM}}. 
+#' 
+#' A table of other gamma values for a range of false positive rates is also given. 
 #'
-#' This function is useful for  calculating  the false positive rate  of \code{\link{AM}} for a given value of \code{gamma}. We do this empirically, via permutation. 
-#' This function is also of use when interested in finding the  value of \code{gamma}  corresponding to a certain false positive rate. Ideally, this would be done automatically 
-#' but currently, it is up to the user to implement their own optimisation strategy. It is on our 'to do list' to revise this function so that 
-#'  a binary search is performed to find the 'best' \code{gamma} value. 
+#' To increase the precision of the gamma estimates, increase \code{numreps}. 
 #'
-#'
-#'
-#' Permutation is performed as follows. First, the null model is fitted to the trait data. 
-#' This is the model that contains all the fixed effects and an error. 
-#' Second,  residuals are  obtained 
-#' from the fitted null model. Third, the residuals are permuted \code{numreps} times. Fourth, for each permutation, 
-#' we treat the residuals as the trait and perform multiple-locus association mapping, conditional on the \code{gamma}
-#' value that has been specified. Any findings are false positives. Fifth, once the \code{numreps} analyses of the permuted 
-#' residuals have been performed, we sum the total number of false positives across the replicate analyses, and 
-#' divide by \code{numreps}.  We now have an estimate of the false positive rate (for the specified trait, 
-#' fixed effects model \code{fformula} and \code{gamma} value). 
 #'
 #'
 #' @seealso \code{\link{AM}}
 #' @return
 #' A list with the following components:
 #' \describe{
-#'\item{numreps}{the number of permutations performed.}
-#'\item{gamma}{gamma value that was used to calculate the false positive rate}
-#'\item{falsepos}{the false positive rate, given the gamma value, calculated from 
-#' analyses of the 'numreps'  permutations.}
+#'\item{numreps:}{the number of permutations performed.}
+#'\item{gamma:}{the vector of gamma values.}
+#'\item{falsepos:}{the false positive rates for the gamma values.}
+#'\item{setgamma:}{the gamma value that gives a false positive rate of \code{falseposrate} }
+#' }
+#'
 #' @examples
 #'   \dontrun{ 
 #'   # Since the following code takes longer than 5 seconds to run, it has been tagged as dontrun. 
@@ -84,41 +82,51 @@
 #'   pheno_obj <- ReadPheno(filename=complete.name)
 #'            
 #'
-#'  # Find the false positive rate for AM when gamma is set to the
-#'  # value 0.9
+#'  #  Suppose we want to perform the AM analysis at a 5% false positive rate. 
 #'  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #'  
-#'   falseposrate <- FPR4AM(trait = 'y',
-#'                 gamma= 0.9,
+#'   ans <- FPR4AM(falseposrate = 0.05,
+#'                 trait = 'y',
 #'                 fformula=c('cov1+cov2'),
 #'                 map = map_obj,
 #'                 pheno = pheno_obj,
 #'                 geno = geno_obj) 
+#'  
+#'
+#'   res <- AM(trait =  'y',
+#'                 fformula=c('cov1+cov2'),
+#'                 map = map_obj,
+#'                 pheno = pheno_obj,
+#'                 geno = geno_obj,
+#'                 gamma = ans$setgamma)
+#'
 #'
 #' }
 #'
 #'
 FPR4AM <- function(
+               falseposrate = 0.05,
                trait=trait,
-               gamma = NULL,
                numreps = 100,
                fformula  = NULL,
                availmemGb=8,
+               numgammas = 20,
                geno=NULL,
                pheno=NULL,
                map = NULL,
                Zmat = NULL,
                ncpu=detectCores(),
                ngpu=0,
-               seed=101
+               seed=101 
                ){
+  quiet <- TRUE   ## change to FALSE if additional error checking is needed. 
 
   set.seed(seed)
  # need some checks in here ... 
 error.code <- check.inputs.mlam(ncpu=ncpu , availmemGb=availmemGb, colname.trait=trait,
-                     map=map, pheno=pheno, geno=geno, Zmat=Zmat )
+                     map=map, pheno=pheno, geno=geno, Zmat=Zmat, gamma=NULL, falseposrate=falseposrate )
  if(error.code){
-   message("\n The Eagle function CalculateFDR has terminated with errors.\n")
+   message("\n The Eagle function FDR4AM has terminated with errors.\n")
    return(NULL)
  }
 
@@ -131,6 +139,12 @@ error.code <- check.inputs.mlam(ncpu=ncpu , availmemGb=availmemGb, colname.trait
                      Chr=rep(1, geno[["dim_of_ascii_M"]][2]),
                      Pos=1:geno[["dim_of_ascii_M"]][2])
   }
+
+selected_loci <- NA
+ new_selected_locus <- NA
+ extBIC <- vector("numeric", 0)
+ ## assign trait 
+# trait <-  pheno[[trait]]
 
 
  ## Turn fformula  into class formula with some checks
@@ -176,6 +190,71 @@ if(!is.null(fformula)){
   }
  }
 
+
+ ## check for NA's in explanatory variables 
+ ## If any, set individual's trait value to NA
+ ## This means this individual will later be removed. 
+ if(!is.null(fformula)){
+    mat <- get_all_vars(formula=fformula, data=pheno)
+    mat.of.NA  <- which(is.na(mat), arr.ind=TRUE)
+  if(!is.null(dim(mat.of.NA)[1]) ){
+     if(dim(mat.of.NA)[1]>0){
+       pheno[unique(mat.of.NA[,1]), trait] <- NA
+     }
+  }
+ }
+
+ ## check for NA's in trait
+ indxNA_pheno <- check.for.NA.in.trait(trait=trait)
+ indxNA_geno <- indxNA_pheno
+
+
+ ## remove missing observations from pheno  
+ if(length(indxNA_pheno)>0){
+    pheno <- pheno[-indxNA_pheno, ]
+    message(" The following rows are being removed from phenotypic data  due to missing trait data: \n")
+    message(cat("             ", indxNA_pheno, "\n\n"))
+ }
+
+
+
+## If Z matrix is present, then we may not need to remove genotypes (i.e. indxNA_geno)
+if(!is.null(Zmat)){
+      Zmat <- Zmat[-indxNA_pheno,]
+      # check for columns with 0 sums. 
+      s <- colSums(Zmat)
+      indxNA_geno <- which(s==0)
+      if (length(indxNA_geno) > 0)
+          Zmat <- Zmat[, -indxNA_geno ]
+}
+
+
+## create a new M.ascii and Mt.ascii if length(indxNA) is non-zero 
+## remove rows in M.ascii and columns in Mt.ascii of those individuals listed in indxNA 
+if(length(indxNA_geno)>0){
+    res <- ReshapeM(fnameM=geno$asciifileM, fnameMt=geno$asciifileMt, indxNA=indxNA_geno, dims=geno$dim_of_ascii_M)
+    message(cat("new dimensions of reshaped M", res, "\n"))
+
+     if(.Platform$OS.type == "unix") {
+       geno$asciifileM <- paste(tempdir() , "/", "M.asciitmp", sep="")
+     } else {
+       geno$asciifileM <- paste( tempdir() , "\\", "M.asciitmp", sep="")
+     }
+
+     if(.Platform$OS.type == "unix") {
+       geno$asciifileMt <- paste( tempdir() , "/", "Mt.asciitmp", sep="")
+     } else {
+       geno$asciifileMt <- paste( tempdir() , "\\", "Mt.asciitmp", sep="")
+     }
+
+    geno$dim_of_ascii_M <- res
+}
+
+
+
+
+
+
  # fit null model and find residuals
  pheno[, "trait"] <- pheno[, trait]  ## name change
  if(is.null(fformula)){
@@ -189,73 +268,240 @@ if(!is.null(fformula)){
 
  mod <- lm( ff , data=pheno)
  res <- residuals(mod)
- # if NA's in trait or fixed effects, then residuals are not calculated. 
- # Need to account for this. 
- indx <- as.numeric(names(res))
- pheno[, "residuals"] <- NA  # initialize
- pheno[indx, "residuals"] <- res
+ pheno[, "residuals"] <- res
 
-am_res <- list()
-for (ii in 1:numreps){
-  ## permute residuals and perform analysis (only permute non-NA values)
+ # create big pheno: contains all permutations 
+bigpheno <- matrix(data=NA, nrow=nrow(pheno), ncol=numreps)
+for(ii in 1:numreps){
   indx <- which(!is.na(pheno[, "residuals"]))
   sperm <- pheno[indx, "residuals"]
   sperm <- sperm[sample(1:length(sperm), length(sperm), FALSE)]
-  pheno[ , "residuals"] <- NA
-  pheno[indx, "residuals"] <- sperm
-  #pheno[, "residuals"] <- pheno[sample(1:length(res), length(res), FALSE), "residuals" ]
-  
-   ## Perform AM+ analysis
-   argu <- list(
-               trait="residuals",
-               gamma = gamma, 
-               availmemGb=availmemGb,
-               geno=geno,
-               pheno=pheno,
-               map = map,
-               ncpu=ncpu, 
-               ngpu=ngpu)
-
-   am_res[[ii]] <- do.call( AM, argu)
-
-   ## running total
-   numres <- rep(0, ii)
-   for(jj in 1:ii){
-       indx <- am_res[[jj]]$Mrk
-       indx <- indx[!is.na(indx)]
-       if(length(indx) > 0)
-           numres[jj] <- length(indx)
-       }
-
-       falsepos <- sum(numres)/ii
-
-       cat(" Iteration ", ii, "\n")
-       #cat(" Gamma = ", gamma, "\n")
-       #cat(" False positive (FP) rate is ", round( falsepos, 3)   , " with ", sum(numres), "FPs already found \n")
+  bigpheno[indx, ii] <- sperm 
+}
+colnames(bigpheno) <- paste0("res", 1:numreps)
 
 
-  
-}  ## end for ii in 1:numreps
 
-numres <- rep(0, numreps)
+ ## build design matrix currentX
+ currentX_null <- .build_design_matrix(pheno=bigpheno, indxNA=NULL , fformula=NULL, quiet=quiet )
+
+
+ ## check currentX for solve(crossprod(X, X)) singularity
+ chck <- tryCatch({ans <- solve(crossprod(currentX_null, currentX_null))},
+           error = function(err){
+            return(TRUE)
+           })
+
+  if(is.logical(chck)){
+      if(chck){
+        message(" There is a problem with the effects in fformula.\n")
+        message(" These effects are causing computational instability. \n")
+        message(" This can occur when there is a strong dependency between the effects.\n")
+        message(" Try removing some of the effects in fformula. \n")
+        message("\n  AM has terminated with errors.\n")
+        return(NULL)
+      }
+  }
+
+
+
+ ## calculate Ve and Vg
+ Args <- list(geno=geno,availmemGb=availmemGb,
+                    ncpu=ncpu,selected_loci=selected_loci,
+                    quiet=quiet)
+ if(!quiet)
+   message(" quiet=FALSE: calculating M %*% M^t. \n")
+ MMt <- do.call(.calcMMt, Args)
+
+ if(!quiet)
+   doquiet(dat=MMt, num_markers=5 , lab="M%*%M^t")
+ invMMt <- chol2inv(chol(MMt))   ## doesn't use GPU
+ gc()
+
+gamma <- seq(0,1,length.out=numgammas)
+
+
+# Fit null model and calculate extBIC
+vc <- list()
+best_ve <- rep(NA, numreps)
+best_vg <- rep(NA, numreps)
+extBIC <-   matrix(data=NA, nrow=numreps, ncol=length(gamma))
+
+vc <- .calcVC(trait=pheno[, "residuals"], Zmat=Zmat, currentX=currentX_null,MMt=MMt, ngpu=ngpu)
+
+
+rep(NA, numreps)
+
+ for (ii in 1:numreps){
+   #vc[[ii]] <- .calcVC(trait=bigpheno[, ii], Zmat=Zmat, currentX=currentX_null,MMt=MMt, ngpu=ngpu)
+   #gc()
+   #best_ve[ii] <- vc[[ii]][["ve"]]
+   #best_vg[ii] <- vc[[ii]][["vg"]]
+   best_ve[ii] <- vc[["ve"]]
+   best_vg[ii] <- vc[["vg"]]
+   gc()
+ } ## for ii
+
+
+# Since there are no fixed effects and we have permuted Y, then 
+# we only need to do this once, for a single rep and all the rest
+# will have the same null extBIC value. 
+extBIC  <- .calc_extBIC(bigpheno[, 1], currentX_null,MMt, geno, Zmat,
+                       numberSNPselected=0 , quiet, gamma)
+
+extBIC <- matrix(data=extBIC, nrow=numreps, ncol=length(gamma)) # formed matrix of null extBIC values
+
+
+ extBIC_alternate <- matrix(data=NA, nrow=numreps, ncol=length(gamma))
+ ## => only need to do once. 
+ ## Looks at the stability of the MMt calculation especially if there are near identical rows of data in M
+ error_checking <- FALSE
+ if (!quiet )
+       error_checking <- TRUE
+
+       MMt_sqrt_and_sqrtinv  <- calculateMMt_sqrt_and_sqrtinv(MMt=MMt, checkres=error_checking,
+                                                              ngpu=ngpu , message=message)
+
+
+      H <- calculateH(MMt=MMt, varE=best_ve[ii], varG=best_vg[ii], Zmat=Zmat, message=message )
+ 
+      P <- calculateP(H=H, X=currentX_null , message=message)
+
+
+
+      hat_a <- calculate_reduced_a_batch(Zmat=Zmat, varG=best_vg[ii], P=P,
+                       MMtsqrt=MMt_sqrt_and_sqrtinv[["sqrt_MMt"]],
+                       y=bigpheno , quiet = quiet , message=message)
+
+      var_hat_a    <- calculate_reduced_vara(Zmat=Zmat, X=currentX_null, 
+                                             varE=best_ve[ii], varG=best_vg[ii], invMMt=invMMt,
+                                             MMtsqrt=MMt_sqrt_and_sqrtinv[["sqrt_MMt"]],
+                                             quiet = quiet, message=message )
+
+
+
+
+      a_and_vara  <- calculate_a_and_vara_batch(numreps = numreps, 
+                                          geno = geno,
+                                          maxmemGb=availmemGb,
+                                          selectedloci = selected_loci,
+                                          invMMtsqrt=MMt_sqrt_and_sqrtinv[["inverse_sqrt_MMt"]],
+                                          transformed_a=hat_a ,
+                                          transformed_vara=var_hat_a,
+                                          quiet=quiet, message=message)
+
+
+
+
 for(ii in 1:numreps){
-  indx <- am_res[[ii]]$Mrk
-  indx <- indx[!is.na(indx)]
-  if(length(indx) > 0)
-     numres[ii] <- length(indx)
+#      message(" Performing permutation ", ii, "of ", numreps, "\r") 
+       if(ii %% 4 == 0 )
+          message("-", appendLF=FALSE)
+       if(ii %% 4 == 1 )
+          message("\\", appendLF=FALSE)
+       if(ii %% 4 == 2 )
+          message("|", appendLF=FALSE)
+       if(ii %% 4 == 3 )
+          message("/", appendLF=FALSE)
+ 
+
+
+      # Select new locus : find_qtl function but with calculateMMt_sqrt_and_sqrtinv
+      # moved outside the function for computational gain with permuted samples
+     
+#      H <- calculateH(MMt=MMt, varE=best_ve[ii], varG=best_vg[ii], Zmat=Zmat, message=message )
+ 
+#      P <- calculateP(H=H, X=currentX_null , message=message)
+
+#      hat_a <- calculate_reduced_a(Zmat=Zmat, varG=best_vg[ii], P=P,
+#                       MMtsqrt=MMt_sqrt_and_sqrtinv[["sqrt_MMt"]],
+#                       y=bigpheno[, ii] , quiet = quiet , message=message)
+
+#      var_hat_a    <- calculate_reduced_vara(Zmat=Zmat, X=currentX_null, 
+#                                             varE=best_ve[ii], varG=best_vg[ii], invMMt=invMMt,
+#                                             MMtsqrt=MMt_sqrt_and_sqrtinv[["sqrt_MMt"]],
+#                                             quiet = quiet, message=message )
+
+#      a_and_vara  <- calculate_a_and_vara(geno = geno,
+#                                          maxmemGb=availmemGb,
+#                                          selectedloci = selected_loci,
+#                                          invMMtsqrt=MMt_sqrt_and_sqrtinv[["inverse_sqrt_MMt"]],
+#                                          transformed_a=hat_a ,
+#                                          transformed_vara=var_hat_a,
+#                                          quiet=quiet, message=message)
+
+
+
+
+
+      ## outlier test statistic
+###        tsq <- a_and_vara[["a"]]**2/a_and_vara[["vara"]]
+      tsq <- a_and_vara[["a"]][, ii]**2/a_and_vara[["vara"]]
+
+      indx <- which(tsq == max(tsq, na.rm=TRUE))   ## index of largest test statistic. 
+                                                   ## However, need to account for other loci 
+                                                   ## already having been removed from M which 
+                                                   ## affects the indexing
+
+       ## taking first found qtl
+       midpoint <- 1
+       if (length(indx)>2){
+          midpoint <- trunc(length(indx)/2)+1
+       }
+       indx <- indx[midpoint]
+
+       new_selected_locus  <- seq(1, geno[["dim_of_ascii_M"]][2])  ## 1:ncols
+       new_selected_locus <- new_selected_locus[indx]
+
+   
+
+       # Fit alternate model
+       currentX <- currentX_null # initialising to base model  
+       currentX <- constructX(Zmat=Zmat, fnameM=geno[["asciifileM"]], currentX=currentX, 
+                              loci_indx=new_selected_locus,
+                              dim_of_ascii_M=geno[["dim_of_ascii_M"]],
+                              map=map, availmemGb = availmemGb)
+
+
+
+       ## Calculate extBIC
+       extBIC_alternate[ii, ]   <- .calc_extBIC(bigpheno[, ii] , currentX, MMt, geno, Zmat,
+                                       numberSNPselected=1 , quiet, gamma)
+
 }
 
-  falsepos <- sum(numres)/numreps
-
-  cat(" For a gamma of ", gamma, " the false positive rate is ", 
-           round( falsepos, 3)   , " \n")
-  cat(" If the false positive rate is too high (low), increase (decrease) the value of gamma. \n")
 
 
- return(list(numreps=numreps, gamma=gamma, falsepos=falsepos    ))
+# calculate FDR for gamma value
+mat <- (extBIC_alternate < extBIC)
+falsepos <- colSums(mat)/numreps
 
+cat("\n\n")
+cat(" Table: Empirical false positive rates, given gamma value for model selection. \n\n")
+cat("  Gamma    |  False Pos Rate  \n")
+cat(" ---------------------------- \n")
+for(ii in 1:length(gamma)){
+cat( gamma[ii], " | ", round(falsepos[ii], 3), "\n")
+} 
+cat(" ----------------------------- \n")
 
+# find best gamma value 
+
+d <- abs(falsepos - falseposrate)
+indx <- which(min(d) == d)
+if(length(indx) > 1){
+   indx <- max(indx)   ## picking most conservative value if there are multiple values
 }
+ setgamma <- gamma[indx]
+
+cat(" For a false positive rate of ", falseposrate, " set the gamma parameter in the AM function to ", setgamma, "\n")
+
+
+ return(list(numreps=numreps, gamma=gamma, falsepos=falsepos, setgamma = setgamma    ))
+
+
+
+} ## end function FPR4AMnew
 
 
 
