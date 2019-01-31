@@ -1,13 +1,13 @@
-cf69f5354c354f2b1c313e0865426d84 *DESCRIPTION
+798d3ada0ae09f65d982bfb6b9b0f9c9 *DESCRIPTION
 d958b2fc3d0d71a2b428eb43f4d15ab4 *NAMESPACE
-ff424e07e644ad5db7d57122280467ed *R/AM.R
-07e7ae7a3159d61d10c09270470f9251 *R/FPR4AM.R
+5e25a5f41c0098e78eb5b81863626067 *R/AM.R
+955be135a94277c7c48fdeafbf584a22 *R/FPR4AM.R
 786de2384479a977d552cb1720056c5d *R/GenomicRel.R
 d53a4c326f178be4d54f4a1f64e67060 *R/OpenGUI.R
 a33ba853f89e0fdc9264a1ca5b83721a *R/RcppExports.R
 724ff4fe2952a4e6b26acf79a23ce8ac *R/ReadMap.R
-ebc4bd03e0b7f7a4ebf3edd3d5160550 *R/ReadMarker.R
-b07771d147dbf603188099bb39500c39 *R/ReadPheno.R
+87a2d3bc21b8cfae9c4cf35cced8cfa3 *R/ReadMarker.R
+a4b2ffcd89e9b9ab9f2941e60b8afa1a *R/ReadPheno.R
 0dfae37175c39b06bc319f0dbac2fdc2 *R/ReadZmat.R
 6d68f63205120dc7527b533b4c98bdcb *R/ReshapeM.R
 b368e0c0d94655a8d40ac960b3b96875 *R/build_design_matrix.R
@@ -27,7 +27,7 @@ a1c40c36755ecaf2673f98e6512445c6 *R/calculate_reduced_vara.R
 3bc04a6fa2898e64cf8c22a71e3ac948 *R/check_inputs.R
 e4e5327422a1ec565c467e7992ebf8fd *R/check_inputs_mlam.R
 e4253b4d1a8b0d9aea62168ca31923b6 *R/constructX.R
-277b04fd3d6612ca50cd75743da6aa19 *R/create_ascii.R
+9b5483c912ea01a274c87d6dcd7c2aa8 *R/create_ascii.R
 ad320ad04dc03eb0236e7c96e6d9cb12 *R/doquiet.R
 5d9fcc8bf335e86223b218b7e5d2b8fe *R/emma_MLE.R
 6de04332e21308e91abdda38acd9a8b4 *R/emma_REMLE.R
@@ -74,7 +74,7 @@ b4a94b786bffe582cf5824950a8596f4 *inst/shiny_app/www/loading.gif
 13dc3cde209c1d91db4af244f5828a64 *man/OpenGUI.Rd
 6c4ed8102849071ee966382532796e70 *man/ReadMap.Rd
 9609ddc20095a63400074b790e355549 *man/ReadMarker.Rd
-df2b72867f1a63170de00becf8a8411d *man/ReadPheno.Rd
+050b6f50fe898df2627ac6fa318fe9e2 *man/ReadPheno.Rd
 79c277ba62f47b74ef86931b27d172ad *man/ReadZmat.Rd
 17a68ab692075e56fa3df82294c09385 *man/SummaryAM.Rd
 52f5d9d15bf451419c09568293f73a87 *src/CreateASCIInospace.cpp
@@ -91,7 +91,7 @@ ca2ecb633908db09b0530dceb50e2302 *src/calculate_a_and_vara_batch_rcpp.cpp
 2f09e51139cedd92d8350b77e23e14d7 *src/calculate_reduced_a_rcpp.cpp
 73e6db323679d903f185aebd22023e69 *src/createM_ASCII_rcpp.cpp
 0753f0fe9ff2ac2700af1f9050307977 *src/createM_ASCII_rcpp.h
-8e957f003877c11985b7f709a2592107 *src/createMt_ASCII_rcpp.cpp
+1bdeda437ea4865236f54ff1ec192eeb *src/createMt_ASCII_rcpp.cpp
 6e143f1c043c81cd0b8603233b4e4c6b *src/extract_geno_rcpp.cpp
 937740e85e393ff1394b19099e314ec0 *src/fasttimer.cpp
 f9bb6f36ac59a0b500d73e9fa9d8cec3 *src/getNumColumns.cpp
