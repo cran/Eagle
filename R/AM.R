@@ -556,8 +556,9 @@ if(length(indxNA_geno)>0){
          ## need to remove the last selected locus since we don't go on and calculate its H and extBIC 
          ## under this new model. 
          .print_final(selected_loci[-length(selected_loci)], map, extBIC, gamma)
-         sigres <- .form_results(trait, selected_loci[-length(selected_loci)], map,  fformula, 
-                     indxNA_pheno, ncpu, availmemGb, quiet,  extBIC, gamma )   
+         sigres <- .form_results(trait, selected_loci[-length(selected_loci)],   fformula, 
+                     indxNA_pheno, indxNA_geno, ncpu, availmemGb, quiet,  extBIC, gamma, 
+                     geno, pheno, map, Zmat )   
     }
  
   }  ## end while continue
@@ -565,8 +566,9 @@ if(length(indxNA_geno)>0){
 if( itnum > maxit){
     .print_header()
     .print_final(selected_loci, map,  extBIC, gamma)
-    sigres <- .form_results(trait, selected_loci, map,  fformula, 
-                     indxNA_pheno, ncpu, availmemGb, quiet,  extBIC, gamma )   
+    sigres <- .form_results(trait, selected_loci,   fformula, 
+                     indxNA_pheno, indxNA_geno, ncpu, availmemGb, quiet,  extBIC, gamma,
+                     geno, pheno, map, Zmat )   
 
 } else {
     ## remove last selected_loci as for this locus, the extBIC went up
@@ -575,14 +577,16 @@ if( itnum > maxit){
         .print_final(selected_loci[-length(selected_loci)], 
                      map, 
                      extBIC[-length(selected_loci)], gamma )
-        sigres <- .form_results(trait, selected_loci[-length(selected_loci)], map,  fformula, 
-                         indxNA_pheno, ncpu, availmemGb, quiet, 
-                         extBIC[-length(selected_loci)], gamma )   
+        sigres <- .form_results(trait, selected_loci[-length(selected_loci)],   fformula, 
+                         indxNA_pheno, indxNA_geno, ncpu, availmemGb, quiet, 
+                         extBIC[-length(selected_loci)], gamma, 
+                         geno, pheno, map, Zmat )   
     } else {
         .print_header()
         .print_final(selected_loci, map, extBIC, gamma )
-        sigres <- .form_results(trait, selected_loci, map,  fformula, 
-                         indxNA_pheno, ncpu, availmemGb, quiet, extBIC, gamma )   
+        sigres <- .form_results(trait, selected_loci,   fformula, 
+                         indxNA_pheno, indxNA_geno, ncpu, availmemGb, quiet, extBIC, gamma, 
+                         geno, pheno, map, Zmat )   
    }  ## end inner  if(length(selected_locus)>1)
 }  ## end if( itnum > maxit)
 
