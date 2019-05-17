@@ -54,6 +54,9 @@ ReadMap  <- function( filename = NULL, csv=FALSE, header=TRUE)
   map <- fread(mapfile, header=header, sep=sep)
   map <- as.data.frame(map)
 
+
+
+
   if (any(is.na(map[,1]))){
      message("  ")
      message("  ")
@@ -84,6 +87,9 @@ if(nrow(map) > 5){
   message(paste(map[ii,], collapse=" "))
   }
 }
+
+
+message("The map file has been loaded.")
 
 
 message("\n\n")
