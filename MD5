@@ -1,5 +1,5 @@
-4c6a2d66a5ad9f0db90834ea8b97a526 *DESCRIPTION
-d958b2fc3d0d71a2b428eb43f4d15ab4 *NAMESPACE
+deb14b7ea79f90ef0a30a4ba568667c9 *DESCRIPTION
+02719e1a2150464836c7701f52142e9e *NAMESPACE
 8bf01a380120944b6129bf3224b480dc *R/AM.R
 bac3af09f1eeac04689ce697b5748fdb *R/FPR4AM.R
 786de2384479a977d552cb1720056c5d *R/GenomicRel.R
@@ -45,7 +45,7 @@ aa4437ce1975790231b3c08ab26cbc70 *R/emma_eigen_L_w_Z.R
 364809614f4f2d447767294ee9a1c70d *R/find_qtl.R
 11d0563a05c264db33c9c4b2d7b8f0b6 *R/form_results.R
 15edcf78077d791a773974163555d973 *R/fullpath.R
-1ba5eeccced67341fc4a72e07b196a67 *R/onAttach.R
+9f235d3a5d1ca1527b7c028abecc780d *R/onAttach.R
 270f224728157d7843d82ef15c95d425 *R/print_final.R
 c5ce4d28a1bc7b4fe4a0069b457e403b *R/print_header.R
 16e2494b7ed744fd836447d8889295a8 *R/print_results.R
@@ -56,7 +56,7 @@ c70ebf8026afb52ff863eaa983dde1ab *inst/extdata/Z.txt
 c030c9380094c490d3f3afc419d15980 *inst/extdata/geno.txt
 6df7d6ab431e134a1c8f332053e6f289 *inst/extdata/map.txt
 381616b1bc74db4c92880a0729185b3d *inst/extdata/pheno.txt
-f946c9faff1f06aed1c6cbac9321c3a0 *inst/shiny_app/app.R
+404cbe9fb87123267c94286e5ba41857 *inst/shiny_app/app.R
 f1f70b900f4e32cbf0a8a27135e9e25d *inst/shiny_app/css.css
 1d8b41ff9898ad114aabf6bec515c92e *inst/shiny_app/help.html
 3721d46912642f6dbc0773fe61324c33 *inst/shiny_app/www/images/HomeScreen.jpg
