@@ -1,7 +1,7 @@
-deb14b7ea79f90ef0a30a4ba568667c9 *DESCRIPTION
+0375ad8c8c25b2d152d932c033c1c02c *DESCRIPTION
 02719e1a2150464836c7701f52142e9e *NAMESPACE
 8bf01a380120944b6129bf3224b480dc *R/AM.R
-bac3af09f1eeac04689ce697b5748fdb *R/FPR4AM.R
+37bd72ded4c5ae88bff98a726715d525 *R/FPR4AM.R
 786de2384479a977d552cb1720056c5d *R/GenomicRel.R
 ad24efa95193b12852cbcd789674d1b2 *R/OpenGUI.R
 a33ba853f89e0fdc9264a1ca5b83721a *R/RcppExports.R
@@ -45,7 +45,7 @@ aa4437ce1975790231b3c08ab26cbc70 *R/emma_eigen_L_w_Z.R
 364809614f4f2d447767294ee9a1c70d *R/find_qtl.R
 11d0563a05c264db33c9c4b2d7b8f0b6 *R/form_results.R
 15edcf78077d791a773974163555d973 *R/fullpath.R
-9f235d3a5d1ca1527b7c028abecc780d *R/onAttach.R
+113770461b5a01225b114f8117925afb *R/onAttach.R
 270f224728157d7843d82ef15c95d425 *R/print_final.R
 c5ce4d28a1bc7b4fe4a0069b457e403b *R/print_header.R
 16e2494b7ed744fd836447d8889295a8 *R/print_results.R
@@ -88,7 +88,7 @@ e80aa5241c4d16dbab489c1bb92412aa *src/ReadBlock.cpp
 5121989c2dd7f2c51f180a0d183b9027 *src/ReshapeM_rcpp.cpp
 7a90e61cc1bdd80d8cc61eec553c2a43 *src/calculateMMt_rcpp.cpp
 ca2ecb633908db09b0530dceb50e2302 *src/calculate_a_and_vara_batch_rcpp.cpp
-6957e15045f1f0c871ca3ae541b526eb *src/calculate_a_and_vara_rcpp.cpp
+e5127572593ed7b7faede14a249e4809 *src/calculate_a_and_vara_rcpp.cpp
 2f09e51139cedd92d8350b77e23e14d7 *src/calculate_reduced_a_rcpp.cpp
 73e6db323679d903f185aebd22023e69 *src/createM_ASCII_rcpp.cpp
 0753f0fe9ff2ac2700af1f9050307977 *src/createM_ASCII_rcpp.h
