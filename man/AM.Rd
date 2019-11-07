@@ -4,9 +4,9 @@
 \alias{AM}
 \title{multiple-locus Association Mapping}
 \usage{
-AM(trait = NULL, fformula = NULL, availmemGb = 8, geno = NULL,
-  pheno = NULL, map = NULL, Zmat = NULL, ncpu = detectCores(),
-  ngpu = 0, quiet = TRUE, maxit = 20, fixit = FALSE, gamma = NULL)
+AM(trait = NULL, fformula = NULL, geno = NULL, pheno = NULL,
+  map = NULL, Zmat = NULL, ncpu = detectCores(), ngpu = 0,
+  quiet = TRUE, maxit = 20, fixit = FALSE, gamma = NULL)
 }
 \arguments{
 \item{trait}{the name of the column in the phenotype data file that contains the trait data. The name is case sensitive and must match exactly the column name in the phenotype data file.}
@@ -14,9 +14,6 @@ AM(trait = NULL, fformula = NULL, availmemGb = 8, geno = NULL,
 \item{fformula}{the right hand side formula for the fixed effects.   See below for details. 
 If
 not specified, only an overall mean will be fitted.}
-
-\item{availmemGb}{a numeric value. It specifies the amount of available memory (in Gigabytes). 
-This should be set to the maximum practical value of available memory for the analysis. If not specified, 8 GBytes is assumed.}
 
 \item{geno}{the R  object obtained from running \code{\link{ReadMarker}}. This must be specified.}
 
@@ -48,8 +45,9 @@ A list with the following components:
 \describe{
 \item{trait:}{column name of the trait being used by 'AM'.}
 \item{fformula:}{the fixed effects part of the linear mixed model.}
-\item{indxNA:}{a vector containing the row indexes of those individuals, whose trait and fixed effects data contain
-missing values and have been removed from the analysis.}
+\item{indxNA_pheno:}{a vector containing the row indexes of the phenotyic data  that have been removed from the analysis.}
+\item{indxNA_geno:}{a vector containing the row indexes of those genotypes that have been removed from the analysis 
+due to missing data. }
 \item{Mrk:}{a vector with the names of the snp in strongest and significant association with the trait.If no loci are found to be 
 significant, then this component is \code{NA}.}
 \item{Chr:}{the chromosomes on which the identified snp lie.}
@@ -124,9 +122,8 @@ labeled pc1 and pc2. The file contains missing data that are coded as 99.
 The file is located in /my/dir.}
 \item{}{the map data is contained in the file map.txt, is also located in 
  /my/dir, and the first row has the column headings.}
-\item{}{An 'AM' analysis is performed where the trait of interest is y2, 
-the fixed effects part of the model is cov1 + cov2 + pc1 + pc2, 
-and the available memory is set to 32 gigabytes.}
+\item{}{An 'AM' analysis is performed where the trait of interest is y2, and
+the fixed effects part of the model is cov1 + cov2 + pc1 + pc2, }
 } 
 
  To analyse these data, we would run the following:
@@ -138,12 +135,12 @@ and the available memory is set to 32 gigabytes.}
   map_obj   <- ReadMap(filename='/my/dir/map.txt')
 
   # FPR4AM calculates the gamma value corresponding to a desired false positive rate of 5\%
-  ans <- FPR4AM(falseposrate=0.05, numreps=100, trait='y2', fformula=c('cov1 + cov2 + pc1 + pc2'), 
-            geno=geno_obj, pheno=pheno_obj, map=map_obj, availmemGb=32)
+  ans <- FPR4AM(falseposrate=0.05, numreps=200, trait='y2', fformula=c('cov1 + cov2 + pc1 + pc2'), 
+            geno=geno_obj, pheno=pheno_obj, map=map_obj)
 
   # performs association mapping with a 5\% false positive rate
   res <- AM(trait='y2', fformula=c('cov1 + cov2 + pc1 + pc2'), 
-            geno=geno_obj, pheno=pheno_obj, map=map_obj, availmemGb=32, gamma=ans$setgamma)
+            geno=geno_obj, pheno=pheno_obj, map=map_obj,  gamma=ans$setgamma)
 }
 A table of results is printed to the screen and saved in the R object \code{res}. 
 }
@@ -168,9 +165,8 @@ a design matrix that only contains zeros and ones where each row must contain on
 the individual's trait value to their corresponding genotype.}
 \item{}{the map data is contained in the file map.txt, is also located in 
  /my/dir, and the first row has the column headings.}
-\item{}{An 'AM' analysis is performed where the trait of interest is y2, 
-the fixed effects part of the model is cov1 + cov2 + pc1 + pc2, 
-and the available memory is set to 32 gigabytes.}
+\item{}{An 'AM' analysis is performed where the trait of interest is y2,  and
+the fixed effects part of the model is cov1 + cov2 + pc1 + pc2.}
 } 
 
  To analyse these data, we would run the following:
@@ -184,7 +180,7 @@ and the available memory is set to 32 gigabytes.}
   Zmat_obj  <- ReadZmat(filename='/my/dir/Zmatrix.txt')
 
   res <- AM(trait='y2', fformula=c('cov1 + cov2 + pc1 + pc2'), 
-            geno=geno_obj, pheno=pheno_obj, map=map_obj, Zmat=Zmat_obj, availmemGb=32)
+            geno=geno_obj, pheno=pheno_obj, map=map_obj, Zmat=Zmat_obj )
 }
 A table of results is printed to the screen and saved in the R object \code{res}. 
 }
@@ -262,7 +258,7 @@ the problem.
                            fformula=c('cov1+cov2'),
                            map = map_obj,
                            pheno = pheno_obj,
-                           geno = geno_obj, availmemGb=8)
+                           geno = geno_obj )
 }
 
 }

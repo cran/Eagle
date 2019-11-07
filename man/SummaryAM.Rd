@@ -66,7 +66,7 @@ multiple locus model.
                            fformula=c("cov1 + cov2"),
                            map = map_obj,
                            pheno = pheno_obj,
-                           geno = geno_obj, availmemGb=8)
+                           geno = geno_obj)
 
   #-----------------------------------------
   # Produce additional summary information 

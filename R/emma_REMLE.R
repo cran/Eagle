@@ -40,15 +40,22 @@ emma.delta.REML.LL.w.Z <- function (logdelta, lambda, etas.1, n, t, etas.2.sq)
         if (is.null(eig.R)) {
             eig.R <- emma.eigen.R.wo.Z(K, X, ngpu)
         }
+
         etas <- crossprod(eig.R$vectors, y)
+
         logdelta <- (0:ngrids)/ngrids * (ulim - llim) + llim
         m <- length(logdelta)
         delta <- exp(logdelta)
         Lambdas <- matrix(eig.R$values, n - q, m) + matrix(delta, 
             n - q, m, byrow = TRUE)
+
+
+
         Etasq <- matrix(etas * etas, n - q, m)
         LL <- 0.5 * ((n - q) * (log((n - q)/(2 * pi)) - 1 - log(colSums(Etasq/Lambdas))) - 
             colSums(log(Lambdas)))
+
+
         dLL <- 0.5 * delta * ((n - q) * colSums(Etasq/(Lambdas * 
             Lambdas))/colSums(Etasq/Lambdas) - colSums(1/Lambdas))
         optlogdelta <- vector(length = 0)

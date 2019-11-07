@@ -1,4 +1,3 @@
-
 #' @title Read  marker data.
 #' 
 #' @description
@@ -234,16 +233,16 @@ ReadMarker <- function( filename=NULL, type='text', missing=NULL,
        dim_of_ascii_M <- getRowColumn(fname=fullpath(filename))
        dim_of_ascii_M[2] <- (dim_of_ascii_M[2] - 6)/2  ## adjusting for PLINK structure
        ## Rcpp function to create binary packed M and Mt file 
-       it_worked <- create.ascii(file_genotype=fullpath(filename), type=type, availmemGb=availmemGb, dim_of_ascii_M=dim_of_ascii_M,  quiet=quiet  )
+       it_worked <- create.bin(file_genotype=fullpath(filename), type=type, availmemGb=availmemGb, dim_of_ascii_M=dim_of_ascii_M,  quiet=quiet  )
        if(!it_worked)
            return(NULL) 
 
     if(.Platform$OS.type == "unix") {
-       asciifileM <- paste(tempdir(), "/", "M.ascii", sep="")
-       asciifileMt <- paste(tempdir(), "/", "Mt.ascii", sep="")
+       asciifileM <- paste(tempdir(), "/", "M.bin", sep="")
+       asciifileMt <- paste(tempdir(), "/", "Mt.bin", sep="")
      } else {
-       asciifileM <- paste(tempdir()  , "\\", "M.ascii", sep="")
-       asciifileMt <- paste(tempdir() , "\\", "Mt.ascii", sep="")
+       asciifileM <- paste(tempdir()  , "\\", "M.bin", sep="")
+       asciifileMt <- paste(tempdir() , "\\", "Mt.bin", sep="")
      }
 
 
@@ -285,7 +284,7 @@ ReadMarker <- function( filename=NULL, type='text', missing=NULL,
   ## Rcpp function to create ascii  M and Mt file from 
   message(" Beginning creation of reformatted file ... ")
   message(" Reading marker data ... \n")
-  it_worked <- create.ascii(file_genotype=genofile, type=type, AA=as.character(AA), AB=as.character(AB), BB=as.character(BB), 
+  it_worked <- create.bin(file_genotype=genofile, type=type, AA=as.character(AA), AB=as.character(AB), BB=as.character(BB), 
               availmemGb=availmemGb, dim_of_ascii_M=dim_of_ascii_M, quiet=quiet, missing=missing  )
 
     if(!it_worked)   ## error has occurred. 
@@ -294,11 +293,11 @@ ReadMarker <- function( filename=NULL, type='text', missing=NULL,
 
 
      if(.Platform$OS.type == "unix") {
-       asciifileM <- paste(tempdir() , "/", "M.ascii", sep="")
-       asciifileMt <- paste(tempdir() , "/", "Mt.ascii", sep="")
+       asciifileM <- paste(tempdir() , "/", "M.bin", sep="")
+       asciifileMt <- paste(tempdir() , "/", "Mt.bin", sep="")
      } else {
-       asciifileM <- paste(tempdir() , "\\", "M.ascii", sep="")
-       asciifileMt <- paste(tempdir() , "\\", "Mt.ascii", sep="")
+       asciifileM <- paste(tempdir() , "\\", "M.bin", sep="")
+       asciifileMt <- paste(tempdir() , "\\", "Mt.bin", sep="")
      }
 
 
@@ -306,7 +305,9 @@ ReadMarker <- function( filename=NULL, type='text', missing=NULL,
   }  ## end if else nargs()==1  (PLINK case)
 
   geno <- list("asciifileM"=asciifileM, "asciifileMt"=asciifileMt,
-               "dim_of_ascii_M" = dim_of_ascii_M)
+               "dim_of_ascii_M" = dim_of_ascii_M,       
+               "dim_of_ascii_Mt" = c(dim_of_ascii_M[2], dim_of_ascii_M[1]),
+               "availmemGb" = availmemGb )
 
   if(.Platform$OS.type == "unix") {
        RDatafile <- paste(tempdir() , "/", "M.RData", sep="")

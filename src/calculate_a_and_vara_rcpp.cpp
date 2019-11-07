@@ -26,16 +26,21 @@ Rcpp::List   calculate_a_and_vara_rcpp(  Rcpp::CharacterVector f_name_ascii,
                                     std::vector <long> dims,
                                     Eigen::VectorXd  a,
                                     bool  quiet,
-                                    Rcpp::Function message)
+                                    Rcpp::Function message, 
+                                    Rcpp::NumericVector indxNA_geno)
 {
-// Purpose: to calculate the untransformed BLUP (a) values from the 
-//          dimension reduced BLUP value estimates. 
+// Purpose: to calculate the untransformed BLUP (a) and var(a) values from the 
+//          dimension reduced BLUP and var value estimates. 
 //          It is necessary to have a block multiplication form of this function. 
 //          Also, since the matrix multiplications are reliant upon the BLAS library, only 
 //          double precision matrix multiplication is possible. This means, the Mt matrix must 
 //          be converted into a double precision matrix which has a large memory cost.  
 // Note:
 //      1. dims is the row, column dimension of the Mt matrix
+
+//    dims[0] -----> number of SNP
+//    dims[1] -----> number of genotypes
+
 
 
 
@@ -46,7 +51,7 @@ std::string
      fnamebin = Rcpp::as<std::string>(f_name_ascii);
 
  Eigen::MatrixXd
-       ans(dims[0],1);
+        ans(dims[0],1);
 
 Eigen::MatrixXd
              ans_tmp,
@@ -72,22 +77,30 @@ if (!quiet){
 
 if(mem_bytes_needed < max_memory_in_Gbytes){
  // calculation will fit into memory
-     Eigen::MatrixXd Mt = ReadBlock(fnamebin, 0, dims[1], dims[0]);
+     Eigen::MatrixXd Mt = ReadBlockBin(fnamebin, 0, dims[1], dims[0]);
+
 
 
    if(!R_IsNA(selected_loci(0))){
-   // setting columns to 0
+   // setting rows to 0
    for(long ii=0; ii < selected_loci.size() ; ii++){
            Mt.row(selected_loci(ii)).setZero();
     }
    }
 
 
-
-
+   if( !R_IsNA(indxNA_geno(0))    ){
+   // setting cols to 0
+   for(long ii=0; ii < indxNA_geno.size() ; ii++){
+           Mt.col(indxNA_geno(ii)).setZero();
+    }
+   }
+  
 
     Eigen::MatrixXd  ans_part1;
-    ans_part1.noalias()  = inv_MMt_sqrt * a;
+    ans_part1.noalias() = inv_MMt_sqrt * a;
+
+
     ans.noalias() =   Mt  * ans_part1;
 
 
@@ -95,23 +108,31 @@ if(mem_bytes_needed < max_memory_in_Gbytes){
 
   // calculate untransformed variances of BLUP values
     Eigen::MatrixXd var_ans_tmp_part1;
-    var_ans_tmp_part1.noalias()  =   dim_reduced_vara * inv_MMt_sqrt;
+    var_ans_tmp_part1.noalias() =   dim_reduced_vara * inv_MMt_sqrt;
     var_ans_tmp_part1 = inv_MMt_sqrt * var_ans_tmp_part1;
 
 
 
 //  Eigen::MatrixXd var_ans_tmp_part1 =  inv_MMt_sqrt * dim_reduced_vara * inv_MMt_sqrt;a
+
     var_ans_tmp.noalias()  =  Mt  *  var_ans_tmp_part1;
     var_ans_tmp_part1.resize(0,0);  // erase matrix 
   long i;
 
+
+  
+ Eigen::VectorXd ans1 ;
+ Eigen::VectorXd ans2 ;
   #if defined(_OPENMP)
-     #pragma omp parallel for shared(var_ans, var_ans_tmp, Mt)  private(i) schedule(static)
+     #pragma omp parallel for shared(var_ans, var_ans_tmp, Mt, var_ans_tmp_part1)  private(i) schedule(static)
   #endif
   for(i=0; i< dims[0]; i++){
-           var_ans(i,0) =   var_ans_tmp.row(i)   * (Mt.row(i)).transpose() ;
+          var_ans(i,0) =   var_ans_tmp.row(i)   * (Mt.row(i)).transpose() ;
+    //   ans1 = (Mt.row(i)) * var_ans_tmp_part1;
+    //   ans2 =  Mt.row(i);
+    //   var_ans(i,0) =     ans1.dot(ans2) ;
+           
   }
-
 
 
 
@@ -162,9 +183,7 @@ if(mem_bytes_needed < max_memory_in_Gbytes){
          if ((start_row1 + num_rows_in_block1) > dims[0])
             num_rows_in_block1 = dims[0] - start_row1;
 
-
-           Eigen::MatrixXd Mt = ReadBlock(fnamebin, start_row1, dims[1], num_rows_in_block1) ;
-
+           Eigen::MatrixXd Mt = ReadBlockBin(fnamebin, start_row1, dims[1], num_rows_in_block1) ;
 
 
         Eigen::MatrixXd
@@ -189,14 +208,25 @@ if(mem_bytes_needed < max_memory_in_Gbytes){
                    }
                 }
             }
+
+            if( !R_IsNA(indxNA_geno(0))    ){
+
+               // setting cols to 0
+               for(long ii=0; ii < indxNA_geno.size() ; ii++){
+                       Mt.col(indxNA_geno(ii)).setZero();
+                }
+               }
+
            //  ans_tmp  =  Mtd *  inv_MMt_sqrt  * a ;
              ans_tmp.noalias()  =   inv_MMt_sqrt  * a ;
              ans_tmp = Mt * ans_tmp;
 
+
+
             // variance calculation
             // vt.noalias() =  Mtd *  inv_MMt_sqrt * dim_reduced_vara * inv_MMt_sqrt;
              vt1.noalias() =  dim_reduced_vara * inv_MMt_sqrt;
-             vt1           =  inv_MMt_sqrt * vt1;
+             vt1 =  inv_MMt_sqrt * vt1;
 
 
 
@@ -211,7 +241,6 @@ if(mem_bytes_needed < max_memory_in_Gbytes){
 #if defined(_OPENMP)
            #pragma omp parallel for
 #endif
-
             for(long j=0; j < num_rows_in_block1; j++){
                       var_ans_tmp(j,0)  =   vt.row(j)  * ((Mt.row(j)).transpose()) ;
             }
