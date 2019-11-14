@@ -14,12 +14,9 @@ A summary function that provides additional information on the significant
     marker-trait associations found by \code{\link{AM}}
 }
 \details{
-\code{SummaryAM} produces two tables of results. First, a table of results is produced with 
+\code{SummaryAM} produces two  tables, an overall summary table and a table  of results with 
 the  p-value for each 
-fixed effect in the final model.  Second, a table of results is produced with the 
-proportion of phenotypes variance explained by  the different multiple-locus models. Each row 
-in this table is the proportion of phenotypic variance explained (Sun et al. 2010) after the marker locus has been added to the 
-multiple locus model.
+fixed effect in the final model.
 }
 \examples{
  \dontrun{
@@ -77,10 +74,6 @@ multiple locus model.
 
 
 
-}
-\references{
-Sun G., Zhu C., Kramer  MH., Yang S-S., et al. 2010. Variation explained in mixed model association 
-mapping. Heredity 105, 330-340.
 }
 \seealso{
 \code{\link{AM}}
