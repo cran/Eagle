@@ -1,12 +1,12 @@
-e7cc845a62ca82273301b9b2b2537040 *DESCRIPTION
+f8f840a813c15ad3119724e204eebce2 *DESCRIPTION
 a16d2d9f4ed0abb915e70e005f80c2b6 *NAMESPACE
-626d9918cf82813e1191e341629eee7d *NEWS
+d66271de8f87037aa13bd674ad162305 *NEWS
 d51dd1aa982792d84a1f9f4b2dc94273 *R/AM.R
-c78ea02600788d0b02d1aeba5785f1a5 *R/FPR4AM.R
+b88e1e77ad1a07895c1b227869bdce7e *R/FPR4AM.R
 786de2384479a977d552cb1720056c5d *R/GenomicRel.R
 ad24efa95193b12852cbcd789674d1b2 *R/OpenGUI.R
 c540d2849c621e997b9d50988cead402 *R/RcppExports.R
-34bf104d495dc62d3e0189e1d999d7b0 *R/ReadMap.R
+3323df818a60340ee6e015b914e77e9a *R/ReadMap.R
 263ab8ddc7683459760fbbef8d5c5621 *R/ReadMarkerBin.R
 296ba287b2cfce2f805adcf8e971dff0 *R/ReadPheno.R
 0dfae37175c39b06bc319f0dbac2fdc2 *R/ReadZmat.R
@@ -15,7 +15,7 @@ c540d2849c621e997b9d50988cead402 *R/RcppExports.R
 9eec87dff3de6bac57a3b5e5b3893a8c *R/calcMMt.R
 55a85fed950362023ceebf3cfb7234f6 *R/calcVC.R
 76a7b973e64cc954d04d42a6327a296f *R/calc_extBIC.R
-a14c9da48642375ef90e3ad3472a1c5d *R/calc_extBIC_MLE.R
+54b1ec3f863f44055c521adb1d821054 *R/calc_extBIC_MLE.R
 a09965ea0a08e828ec3d5a5ed4f1dff2 *R/calculateH.R
 00465ef5aa3cf5a899f541665cf2df34 *R/calculateMMt.R
 c9410e4ffcba8b05cf7ade58e6e217e0 *R/calculateMMt_sqrt_and_sqrtinv.R
@@ -49,7 +49,7 @@ aa4437ce1975790231b3c08ab26cbc70 *R/emma_eigen_L_w_Z.R
 ca65040c5cd0b617ab8cc0b9c1f4f6bb *R/find_qtl.R
 dd234ca58383c0b7cb87e6b1f6c28766 *R/form_results.R
 15edcf78077d791a773974163555d973 *R/fullpath.R
-0a460ec6e1104432bde17eb336ff3e16 *R/onAttach.R
+9b7d6c50dd0de238f2de7ef33b0b806c *R/onAttach.R
 53333f28ee40c6eb804eca43a7fc57a8 *R/print_final.R
 c5ce4d28a1bc7b4fe4a0069b457e403b *R/print_header.R
 16e2494b7ed744fd836447d8889295a8 *R/print_results.R
