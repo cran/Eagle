@@ -48,14 +48,13 @@ Eigen::MatrixXd
       getline(fileIN, line);
       if(rr >= start_row){
           std::istringstream streamA(line);
-          #pragma omp parallel
           {
           #pragma omp for
           for(long ii=0; ii < numcols  ; ii++){
             int tmp  = line[ii] - '0'; // trick to removes ASCII character offset for numbers
             M(rowi, ii) = (double) tmp - 1;   // converting data to -1, 0, 1 
           }
-          } // end pragma omp parallel
+          } // end pragma omp 
           rowi++;
       } // end if rr
    } // end for(rr

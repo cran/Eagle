@@ -48,30 +48,30 @@ BEGIN_RCPP
 END_RCPP
 }
 // calculateMMt_rcpp
-Eigen::MatrixXd calculateMMt_rcpp(Rcpp::CharacterVector f_name_ascii, double max_memory_in_Gbytes, int num_cores, Rcpp::NumericVector selected_loci, std::vector<long> dims, bool quiet, Rcpp::Function message);
-RcppExport SEXP _Eagle_calculateMMt_rcpp(SEXP f_name_asciiSEXP, SEXP max_memory_in_GbytesSEXP, SEXP num_coresSEXP, SEXP selected_lociSEXP, SEXP dimsSEXP, SEXP quietSEXP, SEXP messageSEXP) {
+Eigen::MatrixXd calculateMMt_rcpp(Rcpp::CharacterVector f_name, double max_memory_in_Gbytes, int num_cores, Rcpp::NumericVector selected_loci, std::vector<long> dims, bool quiet, Rcpp::Function message);
+RcppExport SEXP _Eagle_calculateMMt_rcpp(SEXP f_nameSEXP, SEXP max_memory_in_GbytesSEXP, SEXP num_coresSEXP, SEXP selected_lociSEXP, SEXP dimsSEXP, SEXP quietSEXP, SEXP messageSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type f_name_ascii(f_name_asciiSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type f_name(f_nameSEXP);
     Rcpp::traits::input_parameter< double >::type max_memory_in_Gbytes(max_memory_in_GbytesSEXP);
     Rcpp::traits::input_parameter< int >::type num_cores(num_coresSEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type selected_loci(selected_lociSEXP);
     Rcpp::traits::input_parameter< std::vector<long> >::type dims(dimsSEXP);
     Rcpp::traits::input_parameter< bool >::type quiet(quietSEXP);
     Rcpp::traits::input_parameter< Rcpp::Function >::type message(messageSEXP);
-    rcpp_result_gen = Rcpp::wrap(calculateMMt_rcpp(f_name_ascii, max_memory_in_Gbytes, num_cores, selected_loci, dims, quiet, message));
+    rcpp_result_gen = Rcpp::wrap(calculateMMt_rcpp(f_name, max_memory_in_Gbytes, num_cores, selected_loci, dims, quiet, message));
     return rcpp_result_gen;
 END_RCPP
 }
 // calculate_a_and_vara_batch_rcpp
-Rcpp::List calculate_a_and_vara_batch_rcpp(long numreps, Rcpp::CharacterVector f_name_ascii, Rcpp::NumericVector selected_loci, Eigen::Map<Eigen::MatrixXd> inv_MMt_sqrt, Eigen::Map<Eigen::MatrixXd> dim_reduced_vara, double max_memory_in_Gbytes, std::vector <long> dims, Eigen::Map<Eigen::MatrixXd> a, bool quiet, Rcpp::Function message);
-RcppExport SEXP _Eagle_calculate_a_and_vara_batch_rcpp(SEXP numrepsSEXP, SEXP f_name_asciiSEXP, SEXP selected_lociSEXP, SEXP inv_MMt_sqrtSEXP, SEXP dim_reduced_varaSEXP, SEXP max_memory_in_GbytesSEXP, SEXP dimsSEXP, SEXP aSEXP, SEXP quietSEXP, SEXP messageSEXP) {
+Rcpp::List calculate_a_and_vara_batch_rcpp(long numreps, Rcpp::CharacterVector f_name, Rcpp::NumericVector selected_loci, Eigen::Map<Eigen::MatrixXd> inv_MMt_sqrt, Eigen::Map<Eigen::MatrixXd> dim_reduced_vara, double max_memory_in_Gbytes, std::vector <long> dims, Eigen::Map<Eigen::MatrixXd> a, bool quiet, Rcpp::Function message);
+RcppExport SEXP _Eagle_calculate_a_and_vara_batch_rcpp(SEXP numrepsSEXP, SEXP f_nameSEXP, SEXP selected_lociSEXP, SEXP inv_MMt_sqrtSEXP, SEXP dim_reduced_varaSEXP, SEXP max_memory_in_GbytesSEXP, SEXP dimsSEXP, SEXP aSEXP, SEXP quietSEXP, SEXP messageSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< long >::type numreps(numrepsSEXP);
-    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type f_name_ascii(f_name_asciiSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type f_name(f_nameSEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type selected_loci(selected_lociSEXP);
     Rcpp::traits::input_parameter< Eigen::Map<Eigen::MatrixXd> >::type inv_MMt_sqrt(inv_MMt_sqrtSEXP);
     Rcpp::traits::input_parameter< Eigen::Map<Eigen::MatrixXd> >::type dim_reduced_vara(dim_reduced_varaSEXP);
@@ -80,17 +80,17 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< Eigen::Map<Eigen::MatrixXd> >::type a(aSEXP);
     Rcpp::traits::input_parameter< bool >::type quiet(quietSEXP);
     Rcpp::traits::input_parameter< Rcpp::Function >::type message(messageSEXP);
-    rcpp_result_gen = Rcpp::wrap(calculate_a_and_vara_batch_rcpp(numreps, f_name_ascii, selected_loci, inv_MMt_sqrt, dim_reduced_vara, max_memory_in_Gbytes, dims, a, quiet, message));
+    rcpp_result_gen = Rcpp::wrap(calculate_a_and_vara_batch_rcpp(numreps, f_name, selected_loci, inv_MMt_sqrt, dim_reduced_vara, max_memory_in_Gbytes, dims, a, quiet, message));
     return rcpp_result_gen;
 END_RCPP
 }
 // calculate_a_and_vara_rcpp
-Rcpp::List calculate_a_and_vara_rcpp(Rcpp::CharacterVector f_name_ascii, Rcpp::NumericVector selected_loci, Eigen::Map<Eigen::MatrixXd> inv_MMt_sqrt, Eigen::Map<Eigen::MatrixXd> dim_reduced_vara, double max_memory_in_Gbytes, std::vector <long> dims, Eigen::VectorXd a, bool quiet, Rcpp::Function message);
-RcppExport SEXP _Eagle_calculate_a_and_vara_rcpp(SEXP f_name_asciiSEXP, SEXP selected_lociSEXP, SEXP inv_MMt_sqrtSEXP, SEXP dim_reduced_varaSEXP, SEXP max_memory_in_GbytesSEXP, SEXP dimsSEXP, SEXP aSEXP, SEXP quietSEXP, SEXP messageSEXP) {
+Rcpp::List calculate_a_and_vara_rcpp(Rcpp::CharacterVector f_name, Rcpp::NumericVector selected_loci, Eigen::Map<Eigen::MatrixXd> inv_MMt_sqrt, Eigen::Map<Eigen::MatrixXd> dim_reduced_vara, double max_memory_in_Gbytes, std::vector <long> dims, Eigen::VectorXd a, bool quiet, Rcpp::Function message);
+RcppExport SEXP _Eagle_calculate_a_and_vara_rcpp(SEXP f_nameSEXP, SEXP selected_lociSEXP, SEXP inv_MMt_sqrtSEXP, SEXP dim_reduced_varaSEXP, SEXP max_memory_in_GbytesSEXP, SEXP dimsSEXP, SEXP aSEXP, SEXP quietSEXP, SEXP messageSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type f_name_ascii(f_name_asciiSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type f_name(f_nameSEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type selected_loci(selected_lociSEXP);
     Rcpp::traits::input_parameter< Eigen::Map<Eigen::MatrixXd> >::type inv_MMt_sqrt(inv_MMt_sqrtSEXP);
     Rcpp::traits::input_parameter< Eigen::Map<Eigen::MatrixXd> >::type dim_reduced_vara(dim_reduced_varaSEXP);
@@ -99,7 +99,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< Eigen::VectorXd >::type a(aSEXP);
     Rcpp::traits::input_parameter< bool >::type quiet(quietSEXP);
     Rcpp::traits::input_parameter< Rcpp::Function >::type message(messageSEXP);
-    rcpp_result_gen = Rcpp::wrap(calculate_a_and_vara_rcpp(f_name_ascii, selected_loci, inv_MMt_sqrt, dim_reduced_vara, max_memory_in_Gbytes, dims, a, quiet, message));
+    rcpp_result_gen = Rcpp::wrap(calculate_a_and_vara_rcpp(f_name, selected_loci, inv_MMt_sqrt, dim_reduced_vara, max_memory_in_Gbytes, dims, a, quiet, message));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -196,6 +196,22 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
+// create_vcf_BIN_rcpp
+Rcpp::List create_vcf_BIN_rcpp(Rcpp::CharacterVector f_name, Rcpp::CharacterVector f_name_bin_M, Rcpp::CharacterVector f_name_bin_Mt, double max_memory_in_Gbytes, bool quiet, Rcpp::Function message);
+RcppExport SEXP _Eagle_create_vcf_BIN_rcpp(SEXP f_nameSEXP, SEXP f_name_bin_MSEXP, SEXP f_name_bin_MtSEXP, SEXP max_memory_in_GbytesSEXP, SEXP quietSEXP, SEXP messageSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type f_name(f_nameSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type f_name_bin_M(f_name_bin_MSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type f_name_bin_Mt(f_name_bin_MtSEXP);
+    Rcpp::traits::input_parameter< double >::type max_memory_in_Gbytes(max_memory_in_GbytesSEXP);
+    Rcpp::traits::input_parameter< bool >::type quiet(quietSEXP);
+    Rcpp::traits::input_parameter< Rcpp::Function >::type message(messageSEXP);
+    rcpp_result_gen = Rcpp::wrap(create_vcf_BIN_rcpp(f_name, f_name_bin_M, f_name_bin_Mt, max_memory_in_Gbytes, quiet, message));
+    return rcpp_result_gen;
+END_RCPP
+}
 // extract_geno_Mt_rcpp
 Eigen::VectorXi extract_geno_Mt_rcpp(Rcpp::CharacterVector f_name, long selected_locus, std::vector<long> dims);
 RcppExport SEXP _Eagle_extract_geno_Mt_rcpp(SEXP f_nameSEXP, SEXP selected_locusSEXP, SEXP dimsSEXP) {
@@ -257,6 +273,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_Eagle_createM_BIN_rcpp", (DL_FUNC) &_Eagle_createM_BIN_rcpp, 11},
     {"_Eagle_createMt_ASCII_rcpp", (DL_FUNC) &_Eagle_createMt_ASCII_rcpp, 7},
     {"_Eagle_createMt_BIN_rcpp", (DL_FUNC) &_Eagle_createMt_BIN_rcpp, 7},
+    {"_Eagle_create_vcf_BIN_rcpp", (DL_FUNC) &_Eagle_create_vcf_BIN_rcpp, 6},
     {"_Eagle_extract_geno_Mt_rcpp", (DL_FUNC) &_Eagle_extract_geno_Mt_rcpp, 3},
     {"_Eagle_extract_geno_rcpp", (DL_FUNC) &_Eagle_extract_geno_rcpp, 4},
     {"_Eagle_fasttimer", (DL_FUNC) &_Eagle_fasttimer, 0},

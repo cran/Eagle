@@ -1,18 +1,25 @@
   #.find_qtl <- function(Zmat=NULL, geno, availmemGb,  selected_loci, MMt, invMMt, best_ve, best_vg,
-  #                     currentX,  ncpu, quiet, trait, ngpu  )
-  .find_qtl <- function(Zmat=NULL, geno, availmemGb,  selected_loci, MMt, invMMt, best_ve, best_vg,
-                       currentX,  ncpu, quiet, trait, ngpu, itnum)
+  #                     currentX,  ncpu, quiet, trait  )
+  .find_qtl <- function( MMt_sqrt_and_sqrtinv, Zmat=NULL, geno, availmemGb,  selected_loci, MMt, invMMt, best_ve, best_vg,
+                       currentX,  ncpu, quiet, trait,  itnum)
   {
     ##  internal function: use by   AM
 
     # Calculate H
 
+ start <- Sys.time()
+    H <- calculateH(MMt=MMt, varE=best_ve, varG=best_vg, Zmat=Zmat )
+ end <- Sys.time()
+#           print(c(" H =  ", end-start))
 
-    H <- calculateH(MMt=MMt, varE=best_ve, varG=best_vg, Zmat=Zmat, message=message )
+
     if(!quiet)
         doquiet(dat=H, num_markers=5, lab="H")
 
-    P <- calculateP(H=H, X=currentX , message=message)
+ start <- Sys.time()
+    P <- calculateP(H=H, X=currentX  )
+ end <- Sys.time()
+# print(c(" P =  ", end-start))
 
     if(!quiet)
         doquiet(dat=P, num_markers=5 , lab="P")
@@ -27,8 +34,10 @@
     error_checking <- FALSE
     if (!quiet )
        error_checking <- TRUE
-    MMt_sqrt_and_sqrtinv  <- calculateMMt_sqrt_and_sqrtinv(MMt=MMt, checkres=error_checking,
-                              ngpu=ngpu , message=message)
+# start <- Sys.time()
+#    MMt_sqrt_and_sqrtinv  <- calculateMMt_sqrt_and_sqrtinv(MMt=MMt, checkres=error_checking )
+# end <- Sys.time()
+# print(c(" MMt_sqrt_and_sqrtinv  =  ", end-start))
 
 
 
@@ -42,9 +51,12 @@
       message(" quiet =", quiet, ": beginning calculation of the BLUP estimates for dimension reduced model. \n")
     }
 
+ start <- Sys.time()
        hat_a <- calculate_reduced_a(Zmat=Zmat, varG=best_vg, P=P,
                        MMtsqrt=MMt_sqrt_and_sqrtinv[["sqrt_MMt"]],
-                       y=trait, quiet = quiet , message=message)
+                       y=trait, quiet = quiet )
+ end <- Sys.time()
+ #print(c(" hat_a  =  ", end-start))
 
 
 
@@ -59,11 +71,14 @@
       message(" quiet = ", quiet, ": beginning calculation of the standard errors  of BLUP estimates for dimension reduced model. \n")
     }
 
+ start <- Sys.time()
     var_hat_a    <- calculate_reduced_vara(Zmat=Zmat, X=currentX, varE=best_ve, varG=best_vg, 
                        invMMt=invMMt,
                        MMtsqrt=MMt_sqrt_and_sqrtinv[["sqrt_MMt"]],
-                       quiet = quiet, message=message )
+                       quiet = quiet )
 
+ end <- Sys.time()
+ #print(c(" var_hat_a  =  ", end-start))
 
 
 
@@ -79,13 +94,13 @@
 
 
 
-   
+  
      a_and_vara  <- calculate_a_and_vara(geno = geno,
                        selectedloci = selected_loci,
                        invMMtsqrt=MMt_sqrt_and_sqrtinv[["inverse_sqrt_MMt"]],
                        transformed_a=hat_a,
                        transformed_vara=var_hat_a,
-                       quiet=quiet, message=message)
+                       quiet=quiet)
 
      if(!quiet){
         doquiet(dat=a_and_vara[["a"]], num_markers=5, lab="BLUPs for full model")
@@ -95,25 +110,14 @@
     ## outlier test statistic
     if (!quiet )
         message(" quiet = ", quiet, ": beginning calculation of outlier test statistics. \n")
-    tsq <- a_and_vara[["a"]]**2/a_and_vara[["vara"]]
+    indx <- which(a_and_vara[["vara"]]!=0)
+    tsq <- a_and_vara[["a"]][indx]**2/a_and_vara[["vara"]][indx]
+    names(tsq) <- seq(1, length(a_and_vara[["a"]]))[indx]
+
+
+
     if(!quiet)
        doquiet(dat=tsq, num_markers=5, lab="outlier test statistic")
-
-
-   # saving test statistic to disc so that we can plot these results
-#   if(.Platform$OS.type == "unix") {
-#       tmpfile <- paste(tempdir(), "/", paste("tsq", itnum , ".RData", sep="") , sep="")
-#       save(tsq, file=tmpfile)
-#     } else {
-#       tmpfile <- paste(tempdir()  , "\\", paste("tsq", itnum , ".RData", sep="")     , sep="")
-#       save(tsq, file=tmpfile)
-#     }
-
- ## AWG tmp
-# tmpfile <- paste("/home/geo047/"   , "/", paste("tsq", itnum , ".RData", sep="")     , sep="")
-#  save(tsq, file=tmpfile)
-
-
 
 
 
@@ -127,9 +131,9 @@
     } 
     indx <- indx[midpoint]
 
-    orig_indx <- seq(1, geno[["dim_of_ascii_M"]][2])  ## 1:ncols
+    orig_indx <- seq(1, geno[["dim_of_M"]][2])  ## 1:ncols
     res <- list()
-    res[["orig_indx"]] <- orig_indx[indx]
+    res[["orig_indx"]] <- orig_indx[as.numeric(names(tsq))[indx]]
     res[["outlierstat"]] <- tsq
     return(res)
     #return(orig_indx[indx])

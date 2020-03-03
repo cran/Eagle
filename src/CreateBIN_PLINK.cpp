@@ -95,7 +95,7 @@ while(getline(fileIN, line ))
 
    // initialize alleles structure to first row of PLINK info
    if (counter == 0) {
-         #pragma omp parallel for
+         #pragma omp for
          for(long i=0; i < n_of_cols_in_geno ; i++){
             if( rowvec[ (2*i ) ] == '0' ||  rowvec[ (2*i + 1) ] == '0' || rowvec[ (2*i ) ] == '-' ||  rowvec[ (2*i + 1) ] == '-'){
                // missing allele
@@ -112,8 +112,8 @@ while(getline(fileIN, line ))
      // also do some checks for more than 2 alleles, and 0 and - for missing data
 
      long problemlocus = -1;
-     long problemind;
-     #pragma omp parallel for
+     long problemind = 0;
+     #pragma omp for
      for(long i=0; i <  n_of_cols_in_geno; i++){
         // Checking for missing allelic information in PLINK file
 

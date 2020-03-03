@@ -58,7 +58,7 @@
 #'   # File is a plain space separated text file with the first row 
 #'   # the column headings
 #'   complete.name <- system.file('extdata', 'map.txt', 
-#'                                    package='Eagle')
+#'                                    package='Lion')
 #'   map_obj <- ReadMap(filename=complete.name) 
 #'
 #'   # read marker data
@@ -66,7 +66,7 @@
 #'   # Reading in a PLINK ped file 
 #'   # and setting the available memory on the machine for the reading of the data to 8  gigabytes
 #'   complete.name <- system.file('extdata', 'geno.ped', 
-#'                                      package='Eagle')
+#'                                      package='Lion')
 #'   geno_obj <- ReadMarker(filename=complete.name,  type='PLINK', availmemGb=8) 
 #'  
 #'   # read phenotype data
@@ -74,7 +74,7 @@
 #'
 #'   # Read in a plain text file with data on a single trait and two covariates
 #'   # The first row of the text file contains the column names y, cov1, and cov2. 
-#'   complete.name <- system.file('extdata', 'pheno.txt', package='Eagle')
+#'   complete.name <- system.file('extdata', 'pheno.txt', package='Lion')
 #'   
 #'   pheno_obj <- ReadPheno(filename=complete.name)
 #'            
@@ -124,7 +124,7 @@ FPR4AM <- function(
                      map=map, pheno=pheno, geno=geno, Zmat=Zmat, gamma=NULL, falseposrate=falseposrate )
 
  if(error.code){
-   message("\n The Eagle function FPR4AM has terminated with errors.\n")
+   message("\n The Lion function FPR4AM has terminated with errors.\n")
    return(NULL)
  }
 
@@ -133,9 +133,9 @@ FPR4AM <- function(
    message(" Map file has not been supplied. An artificial map is being created but this map is not used in the analysis. \n")
    message(" It is only used for the reporting of results. \n")
    ## map has not been supplied. Create own map
-   map <- data.frame(SNP=paste("M", 1:geno[["dim_of_ascii_M"]][2], sep=""),
-                     Chr=rep(1, geno[["dim_of_ascii_M"]][2]),
-                     Pos=1:geno[["dim_of_ascii_M"]][2])
+   map <- data.frame(SNP=paste("M", 1:geno[["dim_of_M"]][2], sep=""),
+                     Chr=rep(1, geno[["dim_of_M"]][2]),
+                     Pos=1:geno[["dim_of_M"]][2])
   }
 
  selected_loci <- NA
@@ -278,6 +278,8 @@ if(!is.null(fformula)){
 
   pheno[, "residuals"] <- res
 
+ message(cat(" Setting up null model.  "))
+
  # create big pheno: contains all permutations 
 bigpheno <- matrix(data=NA, nrow=length(res) , ncol=numreps)
 for(ii in 1:numreps){
@@ -288,7 +290,7 @@ for(ii in 1:numreps){
 }
 colnames(bigpheno) <- paste0("res", 1:numreps)
 
-
+cat(".")
 
  ## build design matrix currentX
  ## no missing data at this stage to worry about
@@ -298,7 +300,7 @@ colnames(bigpheno) <- paste0("res", 1:numreps)
            error = function(err){
             return(TRUE)
            })
-
+cat(".")
 
   if(is.logical(chck)){
       if(chck){
@@ -321,18 +323,30 @@ colnames(bigpheno) <- paste0("res", 1:numreps)
 
  if(!quiet)
    message(" quiet=FALSE: calculating M %*% M^t. \n")
+
+
  MMt <- do.call(.calcMMt, Args)
+ cat(".")
+
+
 
  if(!quiet)
    doquiet(dat=MMt, num_markers=5 , lab="M%*%M^t")
  invMMt <- chol2inv(chol(MMt))   ## doesn't use GPU
  gc()
+ cat(".")
+
+ if (!quiet)  message(" Calculating square root of MMt and its inverse")
+ MMt_sqrt_and_sqrtinv  <- calculateMMt_sqrt_and_sqrtinv(MMt=MMt, checkres=quiet) 
+
 
  if(is.null(Zmat)){
-            eig.L <- emma.eigen.L.wo.Z(MMt, ngpu)
+            eig.L <- emma.eigen.L.wo.Z(MMt )
+
  } else  {
-            eig.L <- emma.eigen.L.w.Z(Zmat, MMt, ngpu)
+            eig.L <- emma.eigen.L.w.Z(Zmat, MMt)
  }
+ cat(".")
 
 
 
@@ -348,16 +362,16 @@ MaxLike <- rep(NA, numreps)
 extBIC <-   matrix(data=NA, nrow=numreps, ncol=length(gamma))
 
 # Found that REML step gives better results, at least for small sample size
+message("\n Calculating variance components  for null model")
 
-   Args <- list(y=pheno[, "residuals"] , X= currentX_null , Z=Zmat, K=MMt, ngpu=ngpu, eig.L=eig.L)
-   if (!quiet) message(" Estimating variance components of Null model. ")
+   Args <- list(y=pheno[, "residuals"] , X= currentX_null , Z=Zmat, K=MMt, eig.L=eig.L)
    res_full  <- do.call(emma.REMLE, Args)
    vc <- list("vg"=res_full$vg, "ve"=res_full$ve   )
 
 rep(NA, numreps)
 
  for (ii in 1:numreps){
-   #vc[[ii]] <- .calcVC(trait=bigpheno[, ii], Zmat=Zmat, currentX=currentX_null,MMt=MMt, ngpu=ngpu)
+   #vc[[ii]] <- .calcVC(trait=bigpheno[, ii], Zmat=Zmat, currentX=currentX_null,MMt=MMt )
    #gc()
    #best_ve[ii] <- vc[[ii]][["ve"]]
    #best_vg[ii] <- vc[[ii]][["vg"]]
@@ -379,10 +393,13 @@ rep(NA, numreps)
 # will have the same null extBIC value. 
  Args <- list("trait"= bigpheno[,1], "currentX"=currentX_null, "geno"=geno, "MMt"=MMt,
                        "Zmat"=Zmat, "numberSNPselected"=0, "quiet"=quiet, "gamma"=gamma, eig.L=eig.L)
+message(" Calculating extBIC for null model")
  extBIC <-     do.call(.calc_extBIC_MLE, Args)
      gc()
+ cat(".")
 
 extBIC <- matrix(data=extBIC, nrow=numreps, ncol=length(gamma)) # formed matrix of null extBIC values
+ cat(".")
 
 
  extBIC_alternate <- matrix(data=NA, nrow=numreps, ncol=length(gamma))
@@ -391,26 +408,30 @@ extBIC <- matrix(data=extBIC, nrow=numreps, ncol=length(gamma)) # formed matrix 
  error_checking <- FALSE
  if (!quiet ) error_checking <- TRUE
 
- if (!quiet)  message(" Calculating square root of MMt and its inverse")
- MMt_sqrt_and_sqrtinv  <- calculateMMt_sqrt_and_sqrtinv(MMt=MMt, checkres=error_checking,
-                                                              ngpu=ngpu , message=message)
+# if (!quiet)  message(" Calculating square root of MMt and its inverse")
+# MMt_sqrt_and_sqrtinv  <- calculateMMt_sqrt_and_sqrtinv(MMt=MMt, checkres=error_checking) 
 
  if (!quiet)  message(" Calculating H")
+ message("\n Calculating matrices that will be used in alternate model. ")
  
- H <- calculateH(MMt=MMt, varE=best_ve[ii], varG=best_vg[ii], Zmat=Zmat, message=message )
+ H <- calculateH(MMt=MMt, varE=best_ve[ii], varG=best_vg[ii], Zmat=Zmat )
+ cat(".")
  if (!quiet)  message(" Calculating P")
- P <- calculateP(H=H, X=currentX_null , message=message)
+ P <- calculateP(H=H, X=currentX_null )
+ cat(".")
  if (!quiet)  message(" Calculating a hat")
  hat_a <- calculate_reduced_a_batch(Zmat=Zmat, varG=best_vg[ii], P=P,
                        MMtsqrt=MMt_sqrt_and_sqrtinv[["sqrt_MMt"]],
-                       y=bigpheno , quiet = quiet , message=message)
+                       y=bigpheno , quiet = quiet)
+ cat(".")
 
  if (!quiet)  message(" Calculating var(a hat)")
  var_hat_a    <- calculate_reduced_vara(Zmat=Zmat, X=currentX_null, 
                                              varE=best_ve[ii], varG=best_vg[ii], invMMt=invMMt,
                                              MMtsqrt=MMt_sqrt_and_sqrtinv[["sqrt_MMt"]],
-                                             quiet = quiet, message=message )
+                                             quiet = quiet)
 
+ cat(".")
 
  
  if (!quiet)  message(" Calculating  a and vara for full data")
@@ -420,10 +441,11 @@ extBIC <- matrix(data=extBIC, nrow=numreps, ncol=length(gamma)) # formed matrix 
                                           invMMtsqrt=MMt_sqrt_and_sqrtinv[["inverse_sqrt_MMt"]],
                                           transformed_a=hat_a ,
                                           transformed_vara=var_hat_a,
-                                          quiet=quiet, message=message)
+                                          quiet=quiet)
+ cat(".")
+ 
 
-
-
+message("\n Analysing ", numreps, " permuations. ")
 for(ii in 1:numreps){
        if(ii %% 4 == 0 )
           message("-", appendLF=FALSE)
@@ -441,35 +463,49 @@ for(ii in 1:numreps){
      
 
       ## outlier test statistic
-###   tsq <- a_and_vara[["a"]]**2/a_and_vara[["vara"]]
-      tsq <- a_and_vara[["a"]][, ii]**2/a_and_vara[["vara"]]
+      ## tsq <- a_and_vara[["a"]][, ii]**2/a_and_vara[["vara"]]
+     
+      # indx contains the snp numbers of snps with non-zero variances
+      indx <- which(abs(a_and_vara[["vara"]]) > 0.00000001)
+      # cat("Length of indx = ", length(indx), "\n")
 
-      indx <- which(tsq == max(tsq, na.rm=TRUE))   ## index of largest test statistic. 
+      tsq <- a_and_vara[["a"]][indx, ii]**2/a_and_vara[["vara"]][indx]
+
+
+
+
+
+
+      # indx_tsq contains the index position of the maximum tsq. This will 
+      # not be the same as the snp index with the maximum test statistic.
+      indx_tsq <- which(tsq == max(tsq, na.rm=TRUE))   ## index of largest test statistic. 
                                                    ## However, need to account for other loci 
                                                    ## already having been removed from M which 
                                                    ## affects the indexing
 
        ## taking first found qtl
        midpoint <- 1
-       if (length(indx)>2){
-          midpoint <- trunc(length(indx)/2)+1
+       if (length(indx_tsq)>2){
+          midpoint <- trunc(length(indx_tsq)/2)+1
        }
-       indx <- indx[midpoint]
 
-       new_selected_locus  <- seq(1, geno[["dim_of_ascii_M"]][2])  ## 1:ncols
-       new_selected_locus <- new_selected_locus[indx]
+       # indx_of_locus now contains the snp index of the snp with the largest test statistic value. 
+       indx_of_locus <- indx[indx_tsq[midpoint]]
+
+       new_selected_locus  <- seq(1, geno[["dim_of_M"]][2])  ## 1:ncols
+       new_selected_locus <- new_selected_locus[indx_of_locus]
 
    
        # Fit alternate model
        currentX <- currentX_null # initialising to base model  
-       currentX <- constructX(Zmat=Zmat, fnameMt=geno[["asciifileMt"]], currentX=currentX, 
+       currentX <- constructX(Zmat=Zmat, fnameMt=geno[["tmpMt"]], currentX=currentX, 
                               loci_indx=new_selected_locus,
-                              dim_of_Mt=geno[["dim_of_ascii_Mt"]],
+                              dim_of_Mt=geno[["dim_of_Mt"]],
                               map=map )
 
 
   Args <- list("trait"= bigpheno[,ii], "currentX"=currentX, "geno"=geno, "MMt"=MMt,
-                       "Zmat"=Zmat, "numberSNPselected"=1, "quiet"=quiet, "gamma"=gamma)
+                       "Zmat"=Zmat, "numberSNPselected"=1, "quiet"=quiet, "gamma"=gamma, eig.L=eig.L)
 
 
  if (!quiet) message(" calc_extBIC_MLE ")

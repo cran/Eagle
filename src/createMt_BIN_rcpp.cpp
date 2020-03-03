@@ -95,7 +95,7 @@ if(mem_bytes < max_mem_in_bytes){
 
    // Take transpose
   #if defined(_OPENMP)
-     #pragma omp parallel for  
+     #pragma omp for  
   #endif
  for(long ii=0; ii < dims[0]; ii++){
   for(long jj=0; jj < dims[1] ; jj++){
@@ -220,7 +220,7 @@ message(" Number of loci:               "  , dims[1]   );
 } else {
 message(" Number of loci:               "  , dims[1] );
 }
-message( " File size (gigabytes):       "  , mem_bytes/1000000000 );
+message( " File size (gigabytes):       "  , mem_bytes/(3.5*1000000000) ); // 3.5 because that is the factor I am using to give me some breathing room 
 message(" Available memory (gigabytes): " , max_memory_in_Gbytes  );
 message("\n\n" );
 

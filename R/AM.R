@@ -253,7 +253,7 @@ AM <- function(trait=NULL,
                ncpu=detectCores(),
                ngpu=0,
                quiet=TRUE,
-               maxit=20,
+               maxit=40,
                fixit=FALSE,
                gamma=1 
                ){
@@ -269,7 +269,11 @@ AM <- function(trait=NULL,
  ## maxit           maximum number of qtl to include in the model
  ## ngpu            number of gpu available for computation
 
+ assign("ngpu", 0 , envir=computer)
 
+
+ if(is.null(gamma))
+    gamma <- 1
 
 
  ## print tile
@@ -291,9 +295,9 @@ AM <- function(trait=NULL,
      message(" It is only used for the reporting of results. \n")
    }
    ## map has not been supplied. Create own map
-   map <- data.frame(SNP=paste("M", 1:geno[["dim_of_ascii_M"]][2], sep=""), 
-                     Chr=rep(1, geno[["dim_of_ascii_M"]][2]), 
-                     Pos=1:geno[["dim_of_ascii_M"]][2])
+   map <- data.frame(SNP=paste("M", 1:geno[["dim_of_M"]][2], sep=""), 
+                     Chr=rep(1, geno[["dim_of_M"]][2]), 
+                     Pos=1:geno[["dim_of_M"]][2])
   }
 
  selected_loci <- NA
@@ -392,8 +396,8 @@ if(!is.null(fformula)){
  outlierstat <- list()
  while(continue){
      message("\n\n Iteration " , itnum, ": Searching for most significant marker-trait association\n\n")
-     currentX <- constructX(Zmat=Zmat, fnameMt=geno[["asciifileMt"]], currentX=currentX, loci_indx=new_selected_locus,
-                          dim_of_Mt=geno[["dim_of_ascii_Mt"]],
+     currentX <- constructX(Zmat=Zmat, fnameMt=geno[["tmpMt"]], currentX=currentX, loci_indx=new_selected_locus,
+                          dim_of_Mt=geno[["dim_of_Mt"]],
                           map=map )  
      currentX <- as.matrix(currentX)
 
@@ -405,11 +409,32 @@ if(!is.null(fformula)){
      if(itnum==1){
         if(!quiet)
            message(" quiet=FALSE: calculating M %*% M^t. \n")
+           start <- Sys.time()
            MMt <- do.call(.calcMMt, Args)  
+           end <- Sys.time()
+           #print(c(" MMt time ", end-start))
+ 
+           start <- Sys.time()
+           MMt_sqrt_and_sqrtinv  <- calculateMMt_sqrt_and_sqrtinv(MMt=MMt, checkres=quiet )
+           end <- Sys.time()
+           #print(c(" MMt_sqrt_and_sqrtinv  time ", end-start  ) )
 
          if(!quiet)
              doquiet(dat=MMt, num_markers=5 , lab="M%*%M^t")
+           start <- Sys.time()
         invMMt <- chol2inv(chol(MMt))   ## doesn't use GPU
+           end <- Sys.time()
+           #print(c(" inv MMt time ", end-start))
+
+         if(is.null(Zmat)){
+           start <- Sys.time()
+              eig.L <- emma.eigen.L.wo.Z(MMt )
+           end <- Sys.time()
+           #print(c(" eigen MMt  ", end-start))
+
+         } else  {
+               eig.L <- emma.eigen.L.w.Z(Zmat, MMt)
+          }
 
 
         gc()
@@ -420,14 +445,22 @@ if(!is.null(fformula)){
      if(!quiet){
         message(" Calculating variance components for multiple-locus model. \n")
      }
-     vc <- .calcVC(trait=pheno[, trait ], Zmat=Zmat, currentX=as.matrix(currentX), MMt=MMt,  ngpu=ngpu) 
+           start <- Sys.time()
+     vc <- .calcVC(trait=pheno[, trait ], Zmat=Zmat, currentX=as.matrix(currentX), MMt=MMt, 
+                          eig.L=eig.L) 
+           end <- Sys.time()
+           #print(c(" calculate VC  ", end-start))
 
      gc()
      best_ve <- vc[["ve"]]
      best_vg <- vc[["vg"]]
- 
+
+    
+           start <- Sys.time()
      new_extBIC <- .calc_extBIC(vc$ML , pheno[, trait ], currentX, geno, 
                        numberSNPselected=(itnum-1), quiet, gamma) 
+           end <- Sys.time()
+           #print(c(" .calc_extBIC  ", end-start))
 
      gc()
 
@@ -443,9 +476,9 @@ if(!is.null(fformula)){
        if (itnum <= maxit){
            ## find QTL
 
-           ARgs <- list(Zmat=Zmat, geno=geno,availmemGb=geno[["availmemGb"]], selected_loci=selected_loci,
+           ARgs <- list(MMt_sqrt_and_sqrtinv=MMt_sqrt_and_sqrtinv, Zmat=Zmat, geno=geno,availmemGb=geno[["availmemGb"]], selected_loci=selected_loci,
                  MMt=MMt, invMMt=invMMt, best_ve=best_ve, best_vg=best_vg, currentX=as.matrix(currentX),
-                 ncpu=ncpu, quiet=quiet, trait=pheno[, trait ], ngpu=ngpu, itnum=itnum)
+                 ncpu=ncpu, quiet=quiet, trait=pheno[, trait ], itnum=itnum)
 
 
           ## new_selected_locus <- do.call(.find_qtl, ARgs)  ## memory blowing up here !!!! 
@@ -465,11 +498,14 @@ if(!is.null(fformula)){
         if(which(extBIC==min(extBIC))==length(extBIC) ){  ## new way of stoppint based on extBIC only
 
            ## find QTL
-           ARgs <- list(Zmat=Zmat, geno=geno,availmemGb=geno[["availmemGb"]], selected_loci=selected_loci,
+           ARgs <- list(MMt_sqrt_and_sqrtinv=MMt_sqrt_and_sqrtinv, Zmat=Zmat, geno=geno,availmemGb=geno[["availmemGb"]], selected_loci=selected_loci,
                  MMt=MMt, invMMt=invMMt, best_ve=best_ve, best_vg=best_vg, currentX=as.matrix(currentX),
-                 ncpu=ncpu, quiet=quiet, trait=pheno[, trait ], ngpu=ngpu, itnum=itnum)
-
+                 ncpu=ncpu, quiet=quiet, trait=pheno[, trait ], itnum=itnum)
+          start <- Sys.time() 
           fq <-  do.call(.find_qtl, ARgs)  ## memory blowing up here !!!!
+          end <- Sys.time() 
+           #print(c(" .find_qtl =  ", end-start))
+
 
           new_selected_locus <- fq[["orig_indx"]]
           outlierstat[[itnum]] <- fq[["outlierstat"]]
@@ -487,30 +523,30 @@ if(!is.null(fformula)){
    ## alternate stopping rule - if maxit has been exceeded.
     if(itnum > maxit){
          continue <- FALSE 
-         .print_header()
+         ## ==> .print_header()
          ## need to remove the last selected locus since we don't go on and calculate its H and extBIC 
          ## under this new model. 
-         .print_final(selected_loci[-length(selected_loci)], map, extBIC, gamma)
-         sigres <- .form_results(traitname=trait, 
-                                 trait=pheno[, trait ], 
-                                 selected_loci=selected_loci[-length(selected_loci)], 
-                                 fformula=fformula,
-                                 indxNA_pheno=indxNA_pheno,
-                                 ncpu=ncpu, ngpu=ngpu,  availmemGb=geno[["availmemGb"]],
-                                  quiet=quiet, extBIC=extBIC, gamma=gamma, 
-                                 geno=geno, pheno=pheno, map=map, Zmat=Zmat, outlierstat=outlierstat) 
+         ##===> .print_final(selected_loci[-length(selected_loci)], map, extBIC, gamma)
+         ##===>sigres <- .form_results(traitname=trait, 
+         ##                        trait=pheno[, trait ], 
+         ##                        selected_loci=selected_loci[-length(selected_loci)], 
+         ##                        fformula=fformula,
+         ##                        indxNA_pheno=indxNA_pheno,
+         ##                        ncpu=ncpu,  availmemGb=geno[["availmemGb"]],
+         ##                         quiet=quiet, extBIC=extBIC, gamma=gamma, 
+         ##                        geno=geno, pheno=pheno, map=map, Zmat=Zmat, outlierstat=outlierstat) 
     }
  
   }  ## end while continue
 
 if( itnum > maxit){
-#    .print_header()
-#    .print_final(selected_loci, map,  extBIC, gamma)
+   .print_header()
+   .print_final(selected_loci[-length(selected_loci)], map,  extBIC, gamma)
 message("The maximum number of iterations ", maxit, " has been reached. ")
 message("To increase the maximum number of iterations, adjust ")
 message(" the maxit parameter in the AM function call. \n ")
-    sigres <- .form_results(traitname=trait, trait=pheno[, trait ], selected_loci,   fformula, 
-                     indxNA_pheno,  ncpu, ngpu, geno[["availmemGb"]], quiet,  extBIC, gamma,
+    sigres <- .form_results(traitname=trait, trait=pheno[, trait ], selected_loci[-length(selected_loci)],   fformula, 
+                     indxNA_pheno,  ncpu, geno[["availmemGb"]], quiet,  extBIC, gamma,
                      geno, pheno, map, Zmat, outlierstat )   
 
 } else {
@@ -521,23 +557,26 @@ message(" the maxit parameter in the AM function call. \n ")
                      map, 
                      extBIC[-length(selected_loci)], gamma )
         sigres <- .form_results(traitname=trait, pheno[, trait ], selected_loci[-length(selected_loci)],   fformula, 
-                         indxNA_pheno,  ncpu, ngpu, geno[["availmemGb"]], quiet, 
+                         indxNA_pheno,  ncpu,  geno[["availmemGb"]], quiet, 
                          extBIC[-length(selected_loci)], gamma, 
                          geno, pheno, map, Zmat, outlierstat )   
     } else {
         .print_header()
         .print_final(selected_loci, map, extBIC, gamma )
         sigres <- .form_results(traitname=trait, pheno[, trait ], selected_loci,   fformula, 
-                         indxNA_pheno,  ncpu, ngpu, geno[["availmemGb"]], quiet, extBIC, gamma, 
+                         indxNA_pheno,  ncpu,  geno[["availmemGb"]], quiet, extBIC, gamma, 
                          geno, pheno, map, Zmat, outlierstat )   
    }  ## end inner  if(length(selected_locus)>1)
 }  ## end if( itnum > maxit)
 
- 
+
 return( sigres )
 
 } ## end AM
 
+
+computer <- new.env()
+computer$ngpu <- 0
 
 
 

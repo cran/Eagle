@@ -1,4 +1,4 @@
- emma.eigen.L.w.Z <- function (Z, K, complete = TRUE, ngpu=0)
+emma.eigen.L.w.Z <- function (Z, K, complete = TRUE )
 {
     if (complete == FALSE) {
         vids <- colSums(Z) > 0
@@ -11,5 +11,4 @@
     return(list(values = eig$values, vectors = qr.Q(qr(Z %*%
         eig$vectors), complete = TRUE)))
 }
-
 
