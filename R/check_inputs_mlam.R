@@ -1,8 +1,14 @@
 
 check.inputs.mlam <- function (ncpu,  colname.trait, map, pheno,
-                  geno, Zmat, gamma, falseposrate=NULL )
+                  geno, Zmat, lambda, falseposrate=NULL )
 {
   ## internal function for AM
+
+if(!is.data.frame(pheno)){
+   message("Error: the phenotypic data needs to be stored as a data.frame. The command as.data.frame may help.     \n")
+   return(TRUE)
+}
+
 
 if(!is.null(falseposrate)){
   if(!is.numeric(falseposrate)){
@@ -15,14 +21,12 @@ if(!is.null(falseposrate)){
    }
  }
 }
-
 if(is.factor(pheno[[colname.trait]])){
    message("Error: the trait data in ", colname.trait, " is of class factor. Eagle can only handle quantitative traits.   \n")
    message("       Factors are assumed by R if the trait data contains alphanumeric values. \n")
    message("       To proceed, change the data in ", colname.trait, " in the input file so that the trait has only numeric values. \n")
    return(TRUE)
 }
-
 
 if(is.null(colname.trait)){
    message("Error: the name of the column containing the trait data must be given. \n")
@@ -189,24 +193,24 @@ if(is.null(map)){
  }
 
 
-## check gamma is between 0 and 1 if specified. 
-if(!is.null(gamma)){
-  if(!is.numeric(gamma))
+## check lambda is between 0 and 1 if specified. 
+if(!is.null(lambda)){
+  if(!is.numeric(lambda))
   { 
-    message("Error: a non-numeric value has been set for the gamma parameter. ")
+    message("Error: a non-numeric value has been set for the lambda parameter. ")
     message("       Valid values are between 0 and 1. ")
     return(TRUE)
   } else {
 
-     if(gamma < 0)
+     if(lambda < 0)
      {
-        message("Error: the gamma parameter cannot be negative. ")
+        message("Error: the lambda parameter cannot be negative. ")
         message("       Valid values are between 0 and 1. ")
         return(TRUE)
      } 
-     if(gamma > 1 )
+     if(lambda > 1 )
      {
-        message("Error: the gamma parameter cannot be greater than 1. ")
+        message("Error: the lambda parameter cannot be greater than 1. ")
         message("       Valid values are between 0 and 1. ")
         return(TRUE)
     }

@@ -1,3 +1,10 @@
+July  2020 Version 2.3
+* Changed gamma parameter in AM function to lambda parameter to be consistent with extBIC parameterisation. 
+* Added plot function PlotAM. This capability was in the GUI but not as a function. 
+* Added extra table of summary information to SummaryAM function
+* Fixed bug in plotting function in GUI
+
+
 March 2020 Version 2.2
 * Added ability to read vcf files to ReadMarker function. 
 * Revised SummaryAM to also calculate and report  allelic effect sizes
