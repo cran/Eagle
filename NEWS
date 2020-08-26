@@ -1,3 +1,10 @@
+Aug  2020 Version 2.4
+* Fixed bug in plotting function in OpenGUI
+* Improved look of PlotAM
+* Added interactive option to PlotAM to give users the option of saving the plot to file. 
+
+
+
 July  2020 Version 2.3
 * Changed gamma parameter in AM function to lambda parameter to be consistent with extBIC parameterisation. 
 * Added plot function PlotAM. This capability was in the GUI but not as a function. 
