@@ -1,8 +1,8 @@
-32798657aa93aadf39a4716fd4afe6c0 *DESCRIPTION
+75b6de5796d655554dd44e12e8f5a0dc *DESCRIPTION
 7cff905d026f267babffb5e6e12449fe *NAMESPACE
-d20184281c5eb6352a94aecf34a6270c *NEWS
+a4c91024aa216a87aa14c5bfcdc126e7 *NEWS
 6664b8213b0a3f2f3d5a655b4cef4711 *R/AM.R
-5c938d026c4df2a518c2505fddda2299 *R/FPR4AM.R
+a35b7995dc0ae69c4ebdd5fee9734513 *R/FPR4AM.R
 786de2384479a977d552cb1720056c5d *R/GenomicRel.R
 ad24efa95193b12852cbcd789674d1b2 *R/OpenGUI.R
 d922dc66a808257f743a0aade6251378 *R/PlotAM.R
@@ -16,8 +16,8 @@ b23c3b624dde2cace37f71203eecabff *R/ReadVCF.R
 80d1ce1fe595134e7365483cbf91bcbb *R/build_design_matrix.R
 93061ea8253dae52a375ce64438e8c30 *R/calcMMt.R
 4972efe67b21ab850f476208fd282e87 *R/calcVC.R
-d956589cfd6d4f308d7f7a3c1ce60e60 *R/calc_extBIC.R
-830164b5920c6a223a29ed897124258b *R/calc_extBIC_MLE.R
+58beeaa5d6e46fb7303f228e61643540 *R/calc_extBIC.R
+274101a52a9d60fa03f6c24d04a4fd20 *R/calc_extBIC_MLE.R
 017d61f79a7634c26c09354ef7c2410e *R/calculateH.R
 9ce56457c98cd5c86273004bc9bf87ec *R/calculateMMt.R
 b5c6ccc2ebceed5d981a0ff0c2e416cf *R/calculateMMt_sqrt_and_sqrtinv.R
@@ -52,8 +52,8 @@ ab8292221ccf525a089bfcff65ad4b8c *R/extract_geno.R
 c5c3be529084561166c9be7186da3a7f *R/find_qtl.R
 fdde955b51e60f3f0c90ebf668ae7c82 *R/form_results.R
 15edcf78077d791a773974163555d973 *R/fullpath.R
-c2c891a0dda68f179222590223656a19 *R/onAttach.R
-6b0459c3fa2034440fdbd7ff8504c7ca *R/print_final.R
+c237417201f26c0b022197aeb2648232 *R/onAttach.R
+d683c554bcefc1866f82bb1a35f42c75 *R/print_final.R
 c5ce4d28a1bc7b4fe4a0069b457e403b *R/print_header.R
 16e2494b7ed744fd836447d8889295a8 *R/print_results.R
 b8b0be03fa4d22e1ee99a837cf841fdd *R/print_title.R
