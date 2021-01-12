@@ -1,18 +1,17 @@
-\documentclass[article, nojss]{jss}
+%\VignetteIndexEntry{Eagle}
 
-
-
-%% -- LaTeX packages and custom commands ---------------------------------------
-
-%% recommended packages
+\documentclass[nojss]{jss}
 \usepackage{thumbpdf,lmodern}
+\usepackage{hyperref}
+\usepackage{bm}
+\usepackage[utf8]{inputenc}
 
+%% need no \usepackage{Sweave}
+\SweaveOpts{engine=R, eps=FALSE, echo=FALSE, results=hide, keep.source = TRUE, pdf = TRUE, png = FALSE, resolution = 100}
 
 %% new custom commands
 \newcommand{\class}[1]{`\code{#1}'}
 \newcommand{\fct}[1]{\code{#1()}}
-
-%% New commands ... 
 \newcommand{\bwidetildea}{\widetilde{\bm{a}}}
 \newcommand{\bu}{\bm{u}}
 \newcommand{\be}{\bm{e}}
@@ -27,6 +26,14 @@
 \newcommand{\bmm}{\bm{m}}
 \newcommand{\bG}{\bm{G}}
 
+\title{Eagle: an \proglang{R} package for multi-locus association mapping on a genome-wide scale}
+\Plaintitle{Eagle: an R package for multi-locus association mapping on a genome-wide scale}
+\author{Andrew W.  George\\Commonwealth Scientific\\and Industrial Research\\Organisation 
+   \And Arunas Verbyla\\Commonwealth Scientific\\and Industrial Research\\Organisation
+   \And Joshua Bowden\\Commonwealth Scientific\\and Industrial Research\\Organisation
+  }
+\Plainauthor{Andrew W. George, Arunas Verbyla, Joshua Bowden}
+\Keywords{association mapping, linear mixed model, model selection, genome-wide association study}
 
 %% used for removing spaces in subfigure references. 
 \makeatletter
@@ -35,37 +42,6 @@
 
 
 
-
-\usepackage{bm}
-
-%% -- Article metainformation (author, title, ...) -----------------------------
-
-%% - \author{} with primary affiliation
-%% - \Plainauthor{} without affiliations
-%% - Separate authors by \And or \AND (in \author) or by comma (in \Plainauthor).
-%% - \AND starts a new line, \And does not.
-\author{Andrew W.  George\\Commonwealth Scientific\\and Industrial Research\\Organisation 
-   \And Arunas Verbyla\\Commonwealth Scientific\\and Industrial Research\\Organisation
-   \And Joshua Bowden\\Commonwealth Scientific\\and Industrial Research\\Organisation
-  }
-\Plainauthor{Andrew W. George, Arunas Verbyla, Joshua Bowden}
-
-%% - \title{} in title case
-%% - \Plaintitle{} without LaTeX markup (if any)
-%% - \Shorttitle{} with LaTeX markup (if any), used as running title
-\title{
-Eagle: an \proglang{R} package for multi-locus association mapping on a genome-wide scale}
-\Plaintitle{Eagle: an R package for multi-locus association mapping on a genome-wide scale}
-\Shorttitle{Eagle for multi-locus association mapping}
-
-%\VignetteIndexEntry{Eagle_vignette}
-%\VignetteEngine{knitr::knitr}
-\usepackage[utf8]{inputenc}
-
-
-
-
-%% - \Abstract{} almost as usual
 \Abstract{
 \pkg{Eagle} is an \proglang{R} package for multi-locus association mapping on a genome-wide scale. 
 It is unlike other multi-locus packages in that it is easy-to-use for \proglang{R} users 
@@ -80,17 +56,6 @@ Initially, we see \pkg{Eagle} complimenting single-locus analyses. However, over
 multi-locus association mapping their method-of-choice for the analysis of genome-wide association study data. 
 }
 
-%% - \Keywords{} with LaTeX markup, at least one required
-%% - \Plainkeywords{} without LaTeX markup (if necessary)
-%% - Should be comma-separated and in sentence case.
-\Keywords{association mapping, linear mixed model, model selection, genome-wide association study}
-
-
-%% - \Address{} of at least one author
-%% - May contain affiliations for each author
-%%   (in extra lines, separated by \emph{and}\\).
-%% - May contain multiple authors for the same affiliation
-%%   (in the same first line, separated by comma).
 \Address{
   Andrew W. George\\
   Data61\\
@@ -101,20 +66,11 @@ multi-locus association mapping their method-of-choice for the analysis of genom
 
 
 \begin{document}
+%\VignetteIndexEntry{Eagle for multi-locus association mapping}
+%VignetteKeywords{association mapping, linear mixed model, model selection, genome-wide association study}
+%\VignettePackage{Eagle}
 
 
-%% -- Introduction -------------------------------------------------------------
-
-%% - In principle "as usual".
-%% - But should typically have some discussion of both _software_ and _methods_.
-%% - Use \proglang{}, \pkg{}, and \code{} markup throughout the manuscript.
-%% - If such markup is in (sub)section titles, a plain text version has to be
-%%   added as well.
-%% - All software mentioned should be properly \cite-d.
-%% - All abbreviations should be introduced.
-%% - Unless the expansions of abbreviations are proper names (like "Journal
-%%   of Statistical Software" above) they should be in sentence case (like
-%%   "generalized linear models" below).
 
 \section[Introduction]{Introduction} 
 \label{sec:intro}
@@ -387,9 +343,11 @@ Non-R users need only be familiar with a single function \fct{OpenGUI} that open
 
 
 \begin{figure}[th]
-\centerline{\includegraphics[width=15cm, height=8cm]{flowchart.png}}
+\begin{center}
+\includegraphics[width=0.85\textwidth]{flowchart.png}
 \caption{A flow chart of the analysis pipeline for \pkg{Eagle}. Each green box corresponds to a separate page of the GUI.  }
 \label{fig:flowchart}
+\end{center}
 \end{figure}
 
 
@@ -625,13 +583,15 @@ convert the explanatory variables into a useable form  with \code{covObj <- mode
 analysis with the \fct{GAPIT} function with the argument \code{model="MLM"} for single-locus association mapping with LMMs. 
 
 \begin{figure}[t]
-\centerline{\includegraphics[width=16cm, height=9cm]{GAPIT.png}}
+\begin{center}
+\includegraphics[width=0.85\textwidth]{GAPIT.png} 
 \caption{\small Manhattan plot for the single-locus analysis of the example data. Each point is the strength of association between a SNP and trait. Results 
 are shown for the entire genome. The red horizontal line is the 5\% genome-wide significance threshold, calculated via a Bonferroni correction. The 
 blue dashed horizontal lines are the locations of the findings from \pkg{Eagle}.  The order in which \pkg{Eagle} found these findings is given below the blue line. 
 Where single-locus association mapping found only a single region of interest, because of \pkg{Eagle}'s increased statistical power, \pkg{Eagle} found 
 five regions of interest.}
 \label{fig:single}
+\end{center}
 \end{figure}
 
 The single-locus analysis results are shown in the Manhattan plot in Figure \ref{fig:single}.  The positions of the SNPs on the genome are on the x-axis and the  significance scores  $(-log_{10}(\textrm{\it p-value}))$ of the SNPs are on the y-axis. We would conclude from this analysis that there is a single region of interest on 
@@ -664,10 +624,12 @@ Both the \code{phenoObj} and \code{mapObj} are data frame objects.
 
 
 \begin{figure}[t]
-\centerline{\includegraphics[width=15cm, height=8cm]{ReadPhenoMap.pdf}}
+\begin{center}
+\includegraphics[width=0.85\textwidth]{ReadPhenoMap.pdf} 
 \caption{Screenshots of the GUI pages after the phenotypic data (left) and marker map (right) have been uploaded. 
 Any output from the underlying functions is shown in the right-half of a page.}
 \label{fig:ReadPhenoMap}
+\end{center}
 \end{figure}
 
 
@@ -865,11 +827,13 @@ Gamma value for model selection was set to  0.53
 
 
 \begin{figure}[th]
-\centerline{\includegraphics[width=16cm, height=10cm]{ReadMarkerAnalysis.pdf}}
+\begin{center}
+\includegraphics[width=0.85\textwidth]{ReadMarkerAnalysis.pdf}
 \caption{Screenshots of the GUI pages after the genotypic data (left) has been uploaded and 
 the multi-locus association mapping analysis (right) performed. Output is shown in the right-half of the page. 
 }
 \label{fig:ReadMarkerAnalysis}
+\end{center}
 \end{figure}
 
 
@@ -969,7 +933,8 @@ Lambda value for extBIC:                   0.53
 
 %%\begin{figure}[!tpb]%figure2
 \begin{figure}[th]
-\centerline{\includegraphics[width=16cm, height=9cm]{Eagle.png}}
+\begin{center}
+\includegraphics[width=0.85\textwidth]{Eagle.png} 
 \caption{
 Screenshots of the plots from running the \pkg{Eagle} function \code{PlotAM}. All plots are Manhattan plots and are of chromosome 5. These plots show how the significance of the SNPs change throughout the model building process. The red vertical line is the position of the SNP that has the largest score statistic and strongest association with the trait at that iteration. The orange vertical lines are the positions of SNPs found in previous iterations to be in strongest association with the trait. 
 Green (purple) points denote SNPs that have increased (decreased) in significance from the previous iteration. 
@@ -977,6 +942,7 @@ The size of the point is proportional to the size of the change in significance.
 (A), (B), and (D) are plots of the first, second, and fifth iteration, respectively, of the model building process. 
 (C) and (E) were created from (B) and (D) respectively by using \code{PlotAM}'s interactive zoom feature.  }
 \label{fig:subplots}
+\end{center}
 \end{figure}
 
 
