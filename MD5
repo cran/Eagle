@@ -1,6 +1,6 @@
-18eaf30910b349c0550de236164bbb04 *DESCRIPTION
-7cff905d026f267babffb5e6e12449fe *NAMESPACE
-7ac824e844dc3d45b63a2d8175a5e286 *NEWS
+d880393b90cc6bc656d129ce7e4230f0 *DESCRIPTION
+dd415844bb41c9fcbabc58927e1ed276 *NAMESPACE
+2289dd9ee9684722b322a5a957772b68 *NEWS
 6664b8213b0a3f2f3d5a655b4cef4711 *R/AM.R
 a35b7995dc0ae69c4ebdd5fee9734513 *R/FPR4AM.R
 786de2384479a977d552cb1720056c5d *R/GenomicRel.R
@@ -10,7 +10,7 @@ fa7b337956bb5c8f626e53521a968ce0 *R/PlotAM.R
 d28970c7e1570c40435136b677d33ac7 *R/ReadMap.R
 d93414a0152adb42a6512d3513d25dd3 *R/ReadMarkerBin.R
 242631fd60703735758020bbc66b0cff *R/ReadPheno.R
-b23c3b624dde2cace37f71203eecabff *R/ReadVCF.R
+5ead0192f79c2392e56939e88f419b6e *R/ReadVCF.R
 0dfae37175c39b06bc319f0dbac2fdc2 *R/ReadZmat.R
 6d68f63205120dc7527b533b4c98bdcb *R/ReshapeM.R
 80d1ce1fe595134e7365483cbf91bcbb *R/build_design_matrix.R
@@ -20,7 +20,7 @@ b23c3b624dde2cace37f71203eecabff *R/ReadVCF.R
 274101a52a9d60fa03f6c24d04a4fd20 *R/calc_extBIC_MLE.R
 017d61f79a7634c26c09354ef7c2410e *R/calculateH.R
 9ce56457c98cd5c86273004bc9bf87ec *R/calculateMMt.R
-b5c6ccc2ebceed5d981a0ff0c2e416cf *R/calculateMMt_sqrt_and_sqrtinv.R
+0c762d5d550cfd82ee319cf3bae24de5 *R/calculateMMt_sqrt_and_sqrtinv.R
 17de2b239f194fb07920244aaa87707c *R/calculateP.R
 89b2c3136b7fd94a0dd3683839789bc0 *R/calculate_a_and_vara.R
 538b2b95520c205868d8454106f4ae92 *R/calculate_a_and_vara_batch.R
@@ -33,7 +33,7 @@ b5c6ccc2ebceed5d981a0ff0c2e416cf *R/calculateMMt_sqrt_and_sqrtinv.R
 a52838b081ac2713a7cad4ad45405858 *R/constructX.R
 dd139a44a5555c4586394922c4df925e *R/create_ascii.R
 25304ef74131b05ff44c45e9612b4088 *R/create_bin.R
-3968f4189787e66f89d880353b6c3b69 *R/create_vcf_bin.R
+d6bd62502158b6cc0a36b4097ef413db *R/create_vcf_bin.R
 ad320ad04dc03eb0236e7c96e6d9cb12 *R/doquiet.R
 bf183045bdbc6a22b830e5aa599adfc1 *R/emma_MLE.R
 68f7a921a0e4245c9b2a93f735bbe897 *R/emma_REMLE.R
@@ -52,11 +52,11 @@ ab8292221ccf525a089bfcff65ad4b8c *R/extract_geno.R
 c5c3be529084561166c9be7186da3a7f *R/find_qtl.R
 fdde955b51e60f3f0c90ebf668ae7c82 *R/form_results.R
 15edcf78077d791a773974163555d973 *R/fullpath.R
-1e4842255c831ece64fd323663dcf453 *R/onAttach.R
+ff3a302886396395464f8932ba7b9301 *R/onAttach.R
 d683c554bcefc1866f82bb1a35f42c75 *R/print_final.R
 c5ce4d28a1bc7b4fe4a0069b457e403b *R/print_header.R
 16e2494b7ed744fd836447d8889295a8 *R/print_results.R
-02e19312bfb37ec4b1c3017a8ab6f144 *R/print_title.R
+ccbe2813a79fc7b06e8ff6047b22e9d8 *R/print_title.R
 1e5a59a097fe029cde808447d3450b9f *R/summary_am.R
 bbb3d42efdefbf25cd0e6d288cbad16f *inst/CITATION
 c70ebf8026afb52ff863eaa983dde1ab *inst/extdata/Z.txt
@@ -80,7 +80,7 @@ aedbf4f969f4f525a7e7198ac98f13e0 *inst/shiny_app/www/images/homescreen.jpg
 055d9280035f910148ad727299d3515d *inst/shiny_app/www/images/plot_banner.jpg
 b4a94b786bffe582cf5824950a8596f4 *inst/shiny_app/www/loading.gif
 32bb71711c69f0d3049d19cf33a0e905 *man/AM.Rd
-fb2a670716f11ca79e9e15ea515246a4 *man/Eagle-package.Rd
+e73a7bdc3a6346717af1618a01316c3b *man/Eagle-package.Rd
 0e66fdf0b18d27cbed37c21131589c22 *man/FPR4AM.Rd
 a495ea9451139c608db2c5f5c82c48d7 *man/OpenGUI.Rd
 8c21c486aa517e102aee328476f1b596 *man/PlotAM.Rd
@@ -110,7 +110,7 @@ cc19ffb063021928eb0462ba0641c540 *src/createM_BIN_rcpp.cpp
 5278cad45ad55e4363e104dacbe7f7cc *src/createM_BIN_rcpp.h
 1bdeda437ea4865236f54ff1ec192eeb *src/createMt_ASCII_rcpp.cpp
 5e22dddc80cb79acef9b540431270796 *src/createMt_BIN_rcpp.cpp
-764e5227d92b09b48b4e7eb1069ae30d *src/create_vcf_BIN_rcpp.cpp
+215b0e08704f5200b11fa470367732c4 *src/create_vcf_BIN_rcpp.cpp
 27dfb41f7e6547a025dda086794f818c *src/extract_geno_Mt_rcpp.cpp
 e13d85d9d365aed38e35901e1bd01ba6 *src/extract_geno_rcpp.cpp
 937740e85e393ff1394b19099e314ec0 *src/fasttimer.cpp
